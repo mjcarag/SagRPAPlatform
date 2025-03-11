@@ -43,6 +43,8 @@ The app will be available at http://localhost:3000/.
 
 ### Running the Server app
 Start the development server
+
+Go to python folder
    ~~~sh
    python app.py
    ~~~
