@@ -24,9 +24,14 @@ Ensure you have Node.js and npm or yarn installed.
    yarn add react-bootstrap bootstrap
    npm install --global yarn
 
-### Running the app
+3. Install requirements.txt
+   ```sh
+   pip install -r requirements.txt
 
-Start the development server:
+
+### Running the UI app
+
+Start the development UI server:
    ~~~sh
    yarn start
    ~~~
@@ -34,8 +39,15 @@ or
    ~~~
    npm start
    ~~~
-
 The app will be available at http://localhost:3000/.
+
+### Running the Server app
+Start the development server
+   ~~~sh
+   python app.py
+   ~~~
+The app will be available at http://localhost:5000/.
+
 
 🛠 Technologies Used  
 ⚛ React - JavaScript library for building UI  
