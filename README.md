@@ -23,11 +23,9 @@ Ensure you have Node.js and npm or yarn installed.
    npm install react-icons
    yarn add react-bootstrap bootstrap
    npm install --global yarn
-
 3. Install requirements.txt
    ```sh
    pip install -r requirements.txt
-
 
 ### Running the UI app
 
