@@ -24,13 +24,17 @@ Ensure you have Node.js and npm or yarn installed.
    yarn add react-bootstrap bootstrap
    npm install --global yarn
 
-### Running the Project
-Start the development server:
-   ``````````sh
-   npm start
+### Running the app
 
-   ```sh
+Start the development server:
+   ~~~sh
    yarn start
+   ~~~
+or 
+   ~~~
+   npm start
+   ~~~
+
 The app will be available at http://localhost:3000/.
 
 🛠 Technologies Used
@@ -38,4 +42,3 @@ The app will be available at http://localhost:3000/.
 🏗 @hello-pangea/dnd - Drag-and-drop library
 🎨 React Icons - Icon library
 💄 React Bootstrap - UI components and Bootstrap styling
-📄 License
