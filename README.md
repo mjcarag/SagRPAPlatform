@@ -37,8 +37,8 @@ or
 
 The app will be available at http://localhost:3000/.
 
-🛠 Technologies Used
-⚛ React - JavaScript library for building UI
-🏗 @hello-pangea/dnd - Drag-and-drop library
-🎨 React Icons - Icon library
-💄 React Bootstrap - UI components and Bootstrap styling
+🛠 Technologies Used  
+⚛ React - JavaScript library for building UI  
+🏗 @hello-pangea/dnd - Drag-and-drop library  
+🎨 React Icons - Icon library  
+💄 React Bootstrap - UI components and Bootstrap styling  
