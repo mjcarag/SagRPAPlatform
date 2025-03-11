@@ -28,8 +28,3 @@ Ensure you have Node.js and npm or yarn installed.
 Start the development server:
    ```sh
    npm start
-
-
-
-
-
