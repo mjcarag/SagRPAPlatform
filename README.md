@@ -23,15 +23,14 @@ Ensure you have Node.js and npm or yarn installed.
    npm install react-icons
    yarn add react-bootstrap bootstrap
    npm install --global yarn
-   
+
 ### Running the Project
 Start the development server:
-   ```sh
+   ``````````sh
    npm start
-or 
+
    ```sh
    yarn start
-
 The app will be available at http://localhost:3000/.
 
 🛠 Technologies Used
