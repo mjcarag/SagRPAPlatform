@@ -1,0 +1,47 @@
+
+import os
+from flask import Flask, render_template, send_from_directory, jsonify, request
+import subprocess
+import time
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+UPLOAD_FOLDER = "static/screenshots"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+items = []
+
+@app.route('/api/items', methods=['POST'])
+def add_item():
+    data = request.json
+    new_item = {"id": str(len(items) + 1), "content": data['content']}
+    items.append(new_item)
+    return jsonify(new_item)
+
+@app.route('/api/fetchitems', methods=['GET', 'POST'])
+def fetch_item():
+    return jsonify(items)
+
+@app.route('/capture_screenshot', methods=['GET'])
+def capture_screenshot():
+    """Trigger PyQt5 Snipping Tool and return a new filename."""
+    timestamp = int(time.time())  # Unique filename
+    screenshot_filename = f"snip_{timestamp}.png"
+    screenshot_path = os.path.join(UPLOAD_FOLDER, screenshot_filename)
+
+    # Run PyQt5 snipping tool and pass the filename as an argument
+    subprocess.Popen(["python", "snip.py", screenshot_path])  
+
+    return jsonify({"message": "Snipping tool started!", "filename": screenshot_filename})
+
+@app.route('/get_screenshot/<filename>')
+def get_screenshot(filename):
+    """Serve the requested screenshot."""
+    screenshot_path = os.path.join(UPLOAD_FOLDER, filename)
+    if os.path.exists(screenshot_path):
+        return send_from_directory(UPLOAD_FOLDER, filename)
+    return "No screenshot available", 404
+
+app.run(host="0.0.0.0", port=5000,  debug=True)
