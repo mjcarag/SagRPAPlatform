@@ -11,6 +11,7 @@ import os
 def Capture_Click(imagePath,app_title,clickType):
     FileName = os.path.basename(imagePath)
     imageFilePath = os.path.join(os.getcwd(), "static", "screenshots", FileName)
+    print(imageFilePath)
     button = cv2.imread(imageFilePath, cv2.IMREAD_GRAYSCALE)  # Image of the button
     app_window = gw.getWindowsWithTitle(app_title)[0]
     with mss.mss() as sct:
@@ -32,16 +33,16 @@ def Capture_Click(imagePath,app_title,clickType):
     if "left" in clickType.lower():
         # if doubleClick:
         if "double" in clickType.lower():
-            pyautogui.doubleClick(button=clickType)
+            pyautogui.doubleClick(button='left')
         else:
-            pyautogui.click(button=clickType)
+            pyautogui.click(button='left')
     # elif clickType == 'right':
     if "right" in clickType.lower():
         # if doubleClick:
         if "double" in clickType.lower():
-            pyautogui.doubleClick(button=clickType)
+            pyautogui.doubleClick(button='right')
         else:
-            pyautogui.click(button=clickType)
+            pyautogui.click(button='right')
     # pyautogui.click()
     print(f"Button clicked at: ({button_center_x}, {button_center_y})")
  
@@ -67,14 +68,17 @@ def Capture_Click(imagePath,app_title,clickType):
 #                 time.sleep(2)
 
 
-def main(json_data):
-    for item in json_data['screenshots']:
-        Capture_Click(
-            item['imagePath'],
-            item['title'],
-            item['action']
-        )
-        time.sleep(2)
+def main(jsondata):
+    # with open(r'D:\Office Works\VSC\RPAUI\GithubBB\python\static\Testing\test.json') as json_file:
+        # jdata = json.load(json_file)
+        for item in jsondata['screenshots']:
+            print (item['imagePath'])
+            Capture_Click(
+                item['imagePath'],
+                item['title'],
+                item['action']
+            )
+            time.sleep(2)
 
 if __name__ == "__main__":
     # Accept JSON from command line argument
@@ -82,6 +86,7 @@ if __name__ == "__main__":
         json_string = sys.argv[1]
         data = json.loads(json_string)
         time.sleep(5)
+        # main()
         main(data)
     else:
         print("No JSON data provided!")
