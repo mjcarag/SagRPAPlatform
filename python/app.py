@@ -4,6 +4,7 @@ from flask import Flask, render_template, send_from_directory, jsonify, request
 import subprocess
 import time
 from flask_cors import CORS
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -26,9 +27,22 @@ def fetch_item():
 
 @app.route('/Controls', methods=['GET', 'POST'])
 def Controls():
-    data = request.json
-    subprocess.Popen(["python", "CaptureClicks.py", data])
-    return jsonify({"message": "Action Complete!"})
+    data = request.json  # Get JSON data from request
+
+    if not data:
+        return jsonify({"error": "No data received"}), 400
+
+    try:
+        # Convert JSON data to a string and pass it as an argument
+        process = subprocess.Popen(
+            ["python", "CaptureClicks.py", json.dumps(data)], 
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+
+        return jsonify({"message": "Action started!"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/capture_screenshot', methods=['GET'])
 def capture_screenshot():

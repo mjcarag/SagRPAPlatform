@@ -84,26 +84,29 @@ const App = () => {
       .then((res) => res.json())
       .then((data) => setItems([...items, data]))
       .catch((err) => console.error("Error adding item:", err));
+
   };
+  
+
 
   const runMain = () => {
-    const paths = items
-    .map((item) => {
-      const value = localStorage.getItem(item.content);
-      if (value) {
-        try {
-          const parsed = JSON.parse(value);
-          return parsed.image; // Extract only the image path
-        } catch (err) {
-          console.error("Error parsing localStorage value:", err);
-          return null;
-        }
-      }
-      return null;
-    })
-    .filter(Boolean);
 
-    console.log("key item", paths);
+    // const paths = items
+    // .map((item) => {
+    //   const value = localStorage.getItem(item.content);
+    //   if (value) {
+    //     try {
+    //       const parsed = JSON.parse(value);
+    //       return parsed.image; // Extract only the image path
+    //     } catch (err) {
+    //       console.error("Error parsing localStorage value:", err);
+    //       return null;
+    //     }
+    //   }
+    //   return null;
+    // })
+    // .filter(Boolean);
+
 
     const orderedItems = items.map((item, index) => {
       const value = localStorage.getItem(item.content);
@@ -139,6 +142,7 @@ const App = () => {
     .then((res) => res.json())
     .then((data) => console.log(data))
     .catch((err) => console.error("Error fetching items:", err));
+
   };
 
   const actionOnChange = (e) => {
@@ -253,6 +257,7 @@ const App = () => {
             <Row className="mt-3">
               <Col className="d-flex justify-content-end">
                 <Button variant="danger" onClick={captureScreenshot}> <BsRecordCircle /> Capture</Button>
+               
               </Col>
             </Row>
         </Offcanvas.Body>
