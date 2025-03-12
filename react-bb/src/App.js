@@ -87,14 +87,6 @@ const App = () => {
   };
 
   const runMain = () => {
-    // fetch("http://127.0.0.1:5000/api/fetchitems", {
-    //   method: "GET",
-    //   headers: { "Content-Type": "application/json" },
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => console.log(data))
-    //   .catch((err) => console.error("Error fetching items:", err));
-
     const paths = items
     .map((item) => {
       const value = localStorage.getItem(item.content);
@@ -138,6 +130,15 @@ const App = () => {
     });
   
     console.log(JSON.stringify(orderedItems, null, 2));
+
+    fetch("http://127.0.0.1:5000/Controls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderedItems),
+    })
+    .then((res) => res.json())
+    .then((data) => console.log(data))
+    .catch((err) => console.error("Error fetching items:", err));
   };
 
   const actionOnChange = (e) => {
