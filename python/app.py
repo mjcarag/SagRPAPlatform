@@ -24,6 +24,12 @@ def add_item():
 def fetch_item():
     return jsonify(items)
 
+@app.route('/Controls', methods=['GET', 'POST'])
+def Controls():
+    data = request.json
+    subprocess.Popen(["python", "CaptureClicks.py", data])
+    return jsonify({"message": "Action Complete!"})
+
 @app.route('/capture_screenshot', methods=['GET'])
 def capture_screenshot():
     """Trigger PyQt5 Snipping Tool and return a new filename."""
