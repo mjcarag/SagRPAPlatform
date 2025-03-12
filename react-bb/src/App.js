@@ -2,23 +2,47 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Nav, Navbar, Offcanvas, Form, Image, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { FaArrowDown } from "react-icons/fa";
+import { FaArrowDown, FaPlay, FaList, FaCog, FaSignOutAlt  } from "react-icons/fa";
 import { BsRecordCircle } from "react-icons/bs";
-import { CiFloppyDisk, CiPlay1 } from "react-icons/ci";
+import { CiEdit, CiCamera  } from "react-icons/ci";
+import { FaFloppyDisk } from "react-icons/fa6";
+import "./App.css";
 
 const App = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(JSON.parse(localStorage.getItem("items")) || []);
   const [selectedItem, setSelectedItem] = useState({});
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [screenshot, setScreenshot] = useState(null);
   const [action, setAction] = useState("");
   const [isDisabled, setIsDisabled] = useState(true);
-  
+  const [sideBarToggle, setSideBarToggle] = useState(true);
+  const [sidebarRef, setSidebarRef] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedText, setEditedText] = useState(selectedItem.content);
+
   useEffect(() => {
     // Clear localStorage on load
     localStorage.clear();
+  
   }, []);
+  const handleTextChange = () => {
+    const updatedItems = items.map(item =>
+        item.id === selectedItem.id ? { ...item, content: editedText } : item
+    );
+    const data = {
+      action: action,
+      image: screenshot,
+    };
 
+    setSelectedItem(prev => ({ ...prev, content: editedText }));
+
+    setItems(updatedItems);
+    
+    localStorage.setItem(editedText, JSON.stringify(data));
+
+    setIsEditing(false);
+  };
+  
   const captureScreenshot = () => {
     fetch("http://127.0.0.1:5000/capture_screenshot")
       .then((response) => response.json())
@@ -91,23 +115,6 @@ const App = () => {
 
   const runMain = () => {
 
-    // const paths = items
-    // .map((item) => {
-    //   const value = localStorage.getItem(item.content);
-    //   if (value) {
-    //     try {
-    //       const parsed = JSON.parse(value);
-    //       return parsed.image; // Extract only the image path
-    //     } catch (err) {
-    //       console.error("Error parsing localStorage value:", err);
-    //       return null;
-    //     }
-    //   }
-    //   return null;
-    // })
-    // .filter(Boolean);
-
-
     const orderedItems = items.map((item, index) => {
       const value = localStorage.getItem(item.content);
       let imagePath = "";
@@ -167,77 +174,113 @@ const App = () => {
 
   return (
     <div className="App">
-      <Navbar bg="dark" variant="dark" fixed="top" >
+      <Navbar fixed="top" className="bg-topNav" >
         <Container fluid>
-          <Navbar.Brand href="#home">Bautomation Banywhere</Navbar.Brand>
+          <Navbar.Brand href="#home" className="topNav-text"> Bautomation Banywhere</Navbar.Brand>
+         
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
             <Nav>
-              <Nav.Link href="#features">Features</Nav.Link>
-              <Nav.Link href="#pricing">Pricing</Nav.Link>
+              <Nav.Link href="#features" className="topNav-text">Features</Nav.Link>
+              <Nav.Link href="#pricing" className="topNav-text">Pricing</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
+      {/* <Button variant="dark" className="sidebar-toggle mt-5" onClick={() => setSideBarToggle(true)}>
+        <FaBars size={20} />
+      </Button> */}
 
-      <Container fluid="md" className="mt-5 pt-5">
-        <Row>
-          <Col>
-            <Button variant="primary" onClick={addItem}>➕ Capture</Button>
-          </Col>
-          <Col>
-            <Button variant="danger" onClick={runMain} className="me-2"><CiPlay1 /> Run</Button>
-            <Button variant="success" onClick={addItem}><CiFloppyDisk /> Save</Button>
-          </Col>
+      <aside ref={sidebarRef} className={`sidebar ${sideBarToggle ? 'visible' : ""}`}>
+        <h3>Controls</h3>
+        <ul className="sidebar-menu">
+          <li  onClick={addItem}><CiCamera  /> Capture</li>
+          <li><FaList /> Actions</li>
+          <li><FaCog /> Settings</li>
+          <li className="logout"><FaSignOutAlt /> Logout</li>
+        </ul>
+      </aside>
+
+
+      {/* Main content */}
+      <main>  
+        <Container fluid>
+          <Row>
+           
+            <Col>
+              <Button variant="danger" onClick={runMain} className="top-buttons me-2"><FaPlay  /> Run</Button>
+              <Button variant="success" onClick={addItem} className="top-buttons"><FaFloppyDisk  /> Save</Button>
+            </Col>
+          </Row>
           
-        </Row>
-
-        
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="list">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} style={{ marginTop: "20px", padding: "10px", background: "#f8f9fa", borderRadius: "5px" }}>
-                {items.map((item, index) => (
-                  <React.Fragment key={item.id}>
-                    <Draggable draggableId={item.id} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          onClick={() => showProperties(item)}
-                          style={{
-                            padding: 10, margin: "5px auto", background: "#fff",
-                            borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-                            textAlign: "center", cursor: "pointer", ...provided.draggableProps.style
-                          }}
-                        >
-                          {item.content} {item.action}
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="list">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef} 
+                  style={{ marginTop: "20px", 
+                    padding: "10px", 
+                    background: "rgba(53, 34, 8, 0.1)", 
+                    borderRadius: "5px", 
+                    height: "75vh", 
+                    overflowY: "auto", 
+                    width: "100vh"}}>
+                      
+                  {items.map((item, index) => (
+                    <React.Fragment key={item.id}>
+                      <Draggable draggableId={item.id} index={index}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            onClick={() => showProperties(item)}
+                            style={{
+                              padding: 10, margin: "5px auto", background: "#fff",
+                              borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                              textAlign: "center", cursor: "pointer", ...provided.draggableProps.style
+                            }}play
+                          >
+                            {item.content} {item.action}
+                          </div>
+                        )}
+                      </Draggable>
+                      {index < items.length - 1 && (
+                        <div style={{ position: "relative", height: "30px", textAlign: "center" }}>
+                          <FaArrowDown size={20} color="gray" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
                         </div>
                       )}
-                    </Draggable>
-                    {index < items.length - 1 && (
-                      <div style={{ position: "relative", height: "30px", textAlign: "center" }}>
-                        <FaArrowDown size={20} color="gray" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
-                      </div>
-                    )}
-                  </React.Fragment>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </Container>
-
+                    </React.Fragment>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </Container>
+      </main>      
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Properties</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
-            <div>
-              <h5>{selectedItem.content}</h5>
-            </div>
+          <div className="editable-container">
+              {isEditing ? (
+                  <input
+                      type="text"
+                      value={editedText}
+                      onChange={(e) => setEditedText(e.target.value)}
+                      onBlur={handleTextChange}
+                      autoFocus
+                      className="editable-input"
+                  />
+              ) : (
+                  <h5 className="editable-text">
+                      {selectedItem.content}
+                  </h5>
+              )}
+              <CiEdit onClick={() => setIsEditing(true)} className="edit-icon" />
+          </div>
+
             <Row>
               <Col>
                 <Form.Select aria-label="ActionSelect" onChange={actionOnChange} disabled={isDisabled}>
