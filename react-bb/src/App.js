@@ -315,7 +315,15 @@ const App = () => {
               )}
               <CiEdit onClick={() => setIsEditing(true)} className="edit-icon" />
           </div>
-
+          <Row className="mb-2"> 
+              <Col>
+                <Form.Select aria-label="ActionSelect" onChange={actionOnChange}>
+                  <option selected={action === ""} disabled>Choose Action</option>
+                  <option value="Click">Click</option>
+                  <option value="keyStroke">Key Stroke</option>
+                </Form.Select>
+              </Col>
+            </Row>  
             <Row className="mb-2"> 
               <Col>
                 <Form.Select aria-label="ActionSelect" onChange={actionOnChange} disabled={isDisabled}>
