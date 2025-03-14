@@ -1,0 +1,39 @@
+.keyboard-toggle-btn {
+    padding: 5px;
+    font-size: 14px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+  
+  .keyboard-toggle-btn:hover {
+    background: #ddd;
+  }
+  
+  .keyboard-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 10px;
+    background: #352208;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+  }
+  
+  .key {
+    flex: 1 1 30%;
+    padding: 5px;
+    font-size: 14px;
+    background: #444;
+    color: #e1bb80;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .key:hover {
+    background-color: #e1bb80;
+    color: #352208;
+  }
+  

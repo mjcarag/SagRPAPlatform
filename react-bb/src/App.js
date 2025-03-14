@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Button, Container, Nav, Navbar, Offcanvas, Form, Image, Row, Col } from "react-bootstrap";
+import { Button, Container, Nav, Navbar, Offcanvas, Form, Image, Row, Col, Popover, OverlayTrigger, InputGroup } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { FaArrowDown, FaPlay, FaList, FaCog, FaSignOutAlt  } from "react-icons/fa";
-import { BsRecordCircle } from "react-icons/bs";
+import { BsRecordCircle, BsKeyboard } from "react-icons/bs";
 import { CiEdit, CiCamera  } from "react-icons/ci";
 import { FaFloppyDisk } from "react-icons/fa6";
 import "./App.css";
+import "./keyboard.css";
 
 const App = () => {
   const [items, setItems] = useState(JSON.parse(localStorage.getItem("items")) || []);
@@ -19,12 +20,29 @@ const App = () => {
   const [sidebarRef, setSidebarRef] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(selectedItem.content);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     // Clear localStorage on load
     localStorage.clear();
   
   }, []);
+
+  const handleKeyPress = (key) => {
+    setInputValue((prev) => prev + (prev ? " + " : "") + key);
+  };
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+  const functionKeys = [
+    "F1", "F2", "F3", "F4", "F5", "F6",
+    "F7", "F8", "F9", "F10", "F11", "F12",
+    "Esc", "Tab", "Caps", "Shift", "Ctrl", "Alt",
+    "Insert", "Home", "Page Up", "Delete", "End", "Page Down",
+    "Print", "Scroll", "Pause", "Enter", "Backspace", "Space",
+    "Arrow Up", "Arrow Down", "Arrow Left", "Arrow Right",
+
+  ];
   const handleTextChange = () => {
     const updatedItems = items.map(item =>
         item.id === selectedItem.id ? { ...item, content: editedText } : item
@@ -32,6 +50,7 @@ const App = () => {
     const data = {
       action: action,
       image: screenshot,
+      keyboard: inputValue,
     };
 
     setSelectedItem(prev => ({ ...prev, content: editedText }));
@@ -90,10 +109,12 @@ const App = () => {
       setAction(storedData.action);
       setScreenshot(storedData.image);
       setIsDisabled(false);
+      setInputValue(storedData.keyboard);
     }else{
       setIsDisabled(true);
       setAction("");
       setScreenshot(null);
+      setInputValue("");
     }
   };
 
@@ -159,6 +180,7 @@ const App = () => {
     const data = {
       action: actionValue,
       image: screenshot,
+      keyboard: inputValue,
     };
 
     localStorage.setItem(selectedItem.content, JSON.stringify(data));
@@ -171,6 +193,17 @@ const App = () => {
 
    
   }
+  const popover = (
+    <Popover id="popover-function-keys">
+      <Popover.Body className="keyboard-container">
+        {functionKeys.map((key) => (
+          <Button key={key} variant="dark" className="key" onClick={() => handleKeyPress(key)}>
+            {key}
+          </Button>
+        ))}
+      </Popover.Body>
+    </Popover>
+  );
 
   return (
     <div className="App">
@@ -257,6 +290,8 @@ const App = () => {
             </Droppable>
           </DragDropContext>
         </Container>
+        
+
       </main>      
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
         <Offcanvas.Header closeButton>
@@ -281,7 +316,7 @@ const App = () => {
               <CiEdit onClick={() => setIsEditing(true)} className="edit-icon" />
           </div>
 
-            <Row>
+            <Row className="mb-2"> 
               <Col>
                 <Form.Select aria-label="ActionSelect" onChange={actionOnChange} disabled={isDisabled}>
                   <option selected={action === ""} disabled>Choose Action</option>
@@ -290,6 +325,24 @@ const App = () => {
                   <option value="Double Left Click">Double Left Click</option>
                   <option value="Double Right Click">Double Right Click</option>
                 </Form.Select>
+              </Col>
+            </Row>
+            <Row> 
+              <Col>
+                <InputGroup className="mb-3">
+                  <Form.Control
+                    placeholder="Keyboard Input"
+                    aria-label="Keyboard Input"
+                    aria-describedby="btnKb"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                  />
+                  <OverlayTrigger trigger="click" placement="auto" overlay={popover} rootClose>
+                    <Button variant="outline-secondary" id="btnKb" className="keyboard-toggle-btn">
+                      <BsKeyboard size={18} />
+                    </Button>
+                  </OverlayTrigger>
+                </InputGroup>
               </Col>
             </Row>
             <Row className="mt-3">
