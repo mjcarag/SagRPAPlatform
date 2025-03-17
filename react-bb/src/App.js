@@ -73,6 +73,21 @@ const App = () => {
     setInputValue((prev) => prev + (prev ? " + " : "") + key);
   };
   const handleInputChange = (e) => {
+      const data = {
+        action: action,
+        image: screenshot,
+        keyboard: inputValue,
+        window: selectedWindow,
+      };
+
+      localStorage.setItem(selectedItem.content, JSON.stringify(data));
+
+      setItems((prevItems) =>
+        prevItems.map((itm) =>
+          itm.id === selectedItem.id ? { ...itm, action: ` >> ${inputValue}` } : itm
+        )
+      );
+
     setInputValue(e.target.value);
   };
   const functionKeys = [
