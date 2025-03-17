@@ -21,12 +21,49 @@ const App = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(selectedItem.content);
   const [inputValue, setInputValue] = useState("");
+  const [selectedAction, setSelectedAction] = useState("");
+  const [windowTitles, setWindowTitles] = useState([]);
+  const [selectedWindow, setSelectedWindow] = useState("");
+  const serverIP = "http://localhost:5000/";
 
   useEffect(() => {
     // Clear localStorage on load
     localStorage.clear();
-  
+    fetch(serverIP + "window-titles")
+      .then((res) => res.json())
+      .then((data) => setWindowTitles(data.titles))
+      .catch((err) => console.error("Error fetching window titles:", err));
+
   }, []);
+
+  const handleSelectChangeWindow = (event) => {
+    setSelectedWindow(event.target.value);
+  };
+
+  const handleActionSelect = (e) => {
+    if (e.target.value === "mouseClick"){
+      setInputValue("");
+      
+    }else{
+      setAction("");
+    }
+    const data = {
+      action: action,
+      image: screenshot,
+      keyboard: inputValue,
+      window: selectedWindow,
+    };
+
+    localStorage.setItem(selectedItem.content, JSON.stringify(data));
+
+    setItems((prevItems) =>
+      prevItems.map((itm) =>
+        itm.id === selectedItem.id ? { ...itm, action: ` >> ${action}` } : itm
+      )
+    );
+    
+    setSelectedAction(e.target.value);
+  };
 
   const handleKeyPress = (key) => {
     setInputValue((prev) => prev + (prev ? " + " : "") + key);
@@ -43,6 +80,8 @@ const App = () => {
     "Arrow Up", "Arrow Down", "Arrow Left", "Arrow Right",
 
   ];
+
+
   const handleTextChange = () => {
     const updatedItems = items.map(item =>
         item.id === selectedItem.id ? { ...item, content: editedText } : item
@@ -51,6 +90,7 @@ const App = () => {
       action: action,
       image: screenshot,
       keyboard: inputValue,
+      window: selectedWindow,
     };
 
     setSelectedItem(prev => ({ ...prev, content: editedText }));
@@ -181,6 +221,7 @@ const App = () => {
       action: actionValue,
       image: screenshot,
       keyboard: inputValue,
+      window: selectedWindow,
     };
 
     localStorage.setItem(selectedItem.content, JSON.stringify(data));
@@ -315,44 +356,63 @@ const App = () => {
               )}
               <CiEdit onClick={() => setIsEditing(true)} className="edit-icon" />
           </div>
-          <Row className="mb-2"> 
+          <Row className="mb-2">
+            <Col>
+              <Form.Select onChange={handleSelectChangeWindow} value={selectedWindow}>
+                <option value="">Choose a window</option>
+                {windowTitles.map((title, index) => (
+                  <option key={index} value={title}>
+                    {title}
+                  </option>
+                ))}
+              </Form.Select>
+              {/* {selectedWindow && <p>Selected Window: {selectedWindow}</p>} */}
+            </Col>
+          </Row>
+          
+            <Row className="mb-2"> 
               <Col>
-                <Form.Select aria-label="ActionSelect" onChange={actionOnChange}>
+                <Form.Select aria-label="ActionSelect" onChange={handleActionSelect}>
                   <option selected={action === ""} disabled>Choose Action</option>
-                  <option value="Click">Click</option>
+                  <option value="mouseClick">Mouse Click</option>
                   <option value="keyStroke">Key Stroke</option>
                 </Form.Select>
               </Col>
             </Row>  
-            <Row className="mb-2"> 
-              <Col>
-                <Form.Select aria-label="ActionSelect" onChange={actionOnChange} disabled={isDisabled}>
-                  <option selected={action === ""} disabled>Choose Action</option>
-                  <option value="Left Click">Left Click</option>
-                  <option value="Right Click">Right Click</option>
-                  <option value="Double Left Click">Double Left Click</option>
-                  <option value="Double Right Click">Double Right Click</option>
-                </Form.Select>
-              </Col>
-            </Row>
-            <Row> 
-              <Col>
-                <InputGroup className="mb-3">
-                  <Form.Control
-                    placeholder="Keyboard Input"
-                    aria-label="Keyboard Input"
-                    aria-describedby="btnKb"
-                    value={inputValue}
-                    onChange={handleInputChange}
-                  />
-                  <OverlayTrigger trigger="click" placement="auto" overlay={popover} rootClose>
-                    <Button variant="outline-secondary" id="btnKb" className="keyboard-toggle-btn">
-                      <BsKeyboard size={18} />
-                    </Button>
-                  </OverlayTrigger>
-                </InputGroup>
-              </Col>
-            </Row>
+
+            {selectedAction === "mouseClick" && (
+              <Row className="mb-2"> 
+                <Col>
+                  <Form.Select aria-label="ActionSelect" onChange={actionOnChange} disabled={isDisabled}>
+                    <option selected={action === ""} disabled>Choose Action</option>
+                    <option value="Left Click">Left Click</option>
+                    <option value="Right Click">Right Click</option>
+                    <option value="Double Left Click">Double Left Click</option>
+                    <option value="Double Right Click">Double Right Click</option>
+                  </Form.Select>
+                </Col>
+              </Row>
+            )}
+            {selectedAction === "keyStroke" && (
+              <Row> 
+                <Col>
+                  <InputGroup className="mb-3">
+                    <Form.Control
+                      placeholder="Keyboard Input"
+                      aria-label="Keyboard Input"
+                      aria-describedby="btnKb"
+                      value={inputValue}
+                      onChange={handleInputChange}
+                    />
+                    <OverlayTrigger trigger="click" placement="auto" overlay={popover} rootClose>
+                      <Button variant="outline-secondary" id="btnKb" className="keyboard-toggle-btn">
+                        <BsKeyboard size={18} />
+                      </Button>
+                    </OverlayTrigger>
+                  </InputGroup>
+                </Col>
+              </Row>
+             )}
             <Row className="mt-3">
               <Col>
                 <Image src={screenshot} rounded alt="Screenshot" style={{ width: "100%", maxWidth: "500px" }}/>
@@ -361,7 +421,6 @@ const App = () => {
             <Row className="mt-3">
               <Col className="d-flex justify-content-end">
                 <Button variant="danger" onClick={captureScreenshot}> <BsRecordCircle /> Capture</Button>
-               
               </Col>
             </Row>
         </Offcanvas.Body>

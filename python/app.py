@@ -5,6 +5,8 @@ import subprocess
 import time
 from flask_cors import CORS
 import json
+import pygetwindow as gw
+
 
 app = Flask(__name__)
 CORS(app)
@@ -20,6 +22,12 @@ def add_item():
     new_item = {"id": str(len(items) + 1), "content": data['content']}
     items.append(new_item)
     return jsonify(new_item)
+
+@app.route('/window-titles', methods=['GET'])
+def get_window_titles():
+    windows = gw.getAllTitles()
+    filtered_windows = [title for title in windows if title]  # Remove empty titles
+    return jsonify({"titles": filtered_windows})
 
 @app.route('/api/fetchitems', methods=['GET', 'POST'])
 def fetch_item():
