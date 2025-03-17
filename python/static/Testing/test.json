@@ -1,20 +1,16 @@
 {
     "screenshots": [
       {
-        "id": "22",
-        "content": "Image 2",
-        "action": "Double Left Click",
-        "order": 1,
-        "imagePath": "http://127.0.0.1:5000/get_screenshot/snip_1741623549.png",
-        "title":"New tab"
+        "action": "Left Click",
+        "image": "http://127.0.0.1:5000/get_screenshot/snip_1742221297.png",
+        "keyboard": "",
+        "window": "New tab - Personal - Microsoft​ Edge"
       },
       {
-        "id": "23",
-        "content": "Image 1",
-        "action": "Right Click",
-        "order": 1,
-        "imagePath": "http://127.0.0.1:5000/get_screenshot/snip_1741623569.png",
-        "title":"YouTube"
+        "action": "Left Click",
+        "image": "http://127.0.0.1:5000/get_screenshot/snip_1742221321.png",
+        "keyboard": "",
+        "window": "YouTube - Personal - Microsoft​ Edge"
       }
     ]
   }

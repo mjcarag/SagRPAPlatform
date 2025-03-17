@@ -9,18 +9,24 @@ import sys
 import os
 
 def activate_window(app_title):
-    app_window = gw.getWindowsWithTitle(app_title)[0]
-    if app_window:
+    window = gw.getWindowsWithTitle(app_title)
+    windows = gw.getAllTitles()
+    print(windows)
+    if window:
+        app_window = window[0]
         app_window.activate()
         time.sleep(1)
 
 def Capture_Click(imagePath,app_title,clickType):
     activate_window(app_title)
+    # print(app_title)
+    
     FileName = os.path.basename(imagePath)
     imageFilePath = os.path.join(os.getcwd(), "static", "screenshots", FileName)
     print(imageFilePath)
     button = cv2.imread(imageFilePath, cv2.IMREAD_GRAYSCALE)  # Image of the button
     app_window = gw.getWindowsWithTitle(app_title)[0]
+    # print(app_window)
     with mss.mss() as sct:
         monitor = {
             "top": app_window.top,
@@ -131,9 +137,9 @@ def simulate_keystrokes(keys):
 
 def main(jsondata):
     # with open(r'D:\Office Works\VSC\RPAUI\GithubBB\python\static\Testing\test.json') as json_file:
-        # jdata = json.load(json_file)
-        for item in jsondata['screenshots']:
-            print (item['imagePath'])
+        # jsondata = json.load(json_file)
+        for item in jsondata:
+            print(item['imagePath'])
             if item['action'] != '':
                 Capture_Click(
                     item['imagePath'],
@@ -146,6 +152,8 @@ def main(jsondata):
             time.sleep(2)
 
 if __name__ == "__main__":
+    print(sys.argv)
+    print('test')
     if len(sys.argv) > 1:
         json_string = sys.argv[1]
         data = json.loads(json_string)

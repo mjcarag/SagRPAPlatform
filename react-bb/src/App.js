@@ -190,12 +190,13 @@ const App = () => {
       const value = localStorage.getItem(item.content);
       let imagePath = "";
       let actionKey = "";
+      let appwindow = "";
       if (value) {
         try {
           const parsed = JSON.parse(value);
           imagePath = parsed.image || ""; 
           actionKey = parsed.action || "";
-
+          appwindow = parsed.window || "";
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
@@ -207,6 +208,7 @@ const App = () => {
         action: actionKey,
         order: index + 1,
         imagePath: imagePath,
+        window: appwindow,
       };
     });
   

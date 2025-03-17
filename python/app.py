@@ -43,10 +43,15 @@ def Controls():
 
     try:
         # Convert JSON data to a string and pass it as an argument
+        
         process = subprocess.Popen(
             ["python", "CaptureClicks.py", json.dumps(data)], 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
+
+        stdout, stderr = process.communicate()
+        print(f"📥 Subprocess Output:\n{stdout}")
+        print(f"📤 Subprocess Error:\n{stderr}")
 
         return jsonify({"message": "Action started!"})
 
@@ -57,11 +62,11 @@ def Controls():
 def capture_screenshot():
     data = request.json
     app_window = gw.getWindowsWithTitle(data['window'])[0]
-
+    print(app_window)
     if app_window:
         app_window.activate()
         time.sleep(1)
-        
+
     """Trigger PyQt5 Snipping Tool and return a new filename."""
     timestamp = int(time.time())  # Unique filename
     screenshot_filename = f"snip_{timestamp}.png"
