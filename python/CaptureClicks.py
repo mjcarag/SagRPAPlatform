@@ -7,8 +7,15 @@ import time
 import json
 import sys
 import os
- 
+
+def activate_window(app_title):
+    app_window = gw.getWindowsWithTitle(app_title)[0]
+    if app_window:
+        app_window.activate()
+        time.sleep(1)
+
 def Capture_Click(imagePath,app_title,clickType):
+    activate_window(app_title)
     FileName = os.path.basename(imagePath)
     imageFilePath = os.path.join(os.getcwd(), "static", "screenshots", FileName)
     print(imageFilePath)
@@ -127,13 +134,14 @@ def main(jsondata):
         # jdata = json.load(json_file)
         for item in jsondata['screenshots']:
             print (item['imagePath'])
-            if item['action'] == 'click':
+            if item['action'] != '':
                 Capture_Click(
                     item['imagePath'],
-                    item['title'],
+                    item['window'],
                     item['action']
                 )
-            elif item['action'] == 'type':
+            elif item['keyboard'] != '':
+                activate_window(item['window'])
                 simulate_keystrokes(item['keys'])
             time.sleep(2)
 

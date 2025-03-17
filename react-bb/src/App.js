@@ -37,6 +37,10 @@ const App = () => {
   }, []);
 
   const handleSelectChangeWindow = (event) => {
+    fetch(serverIP + "window-titles")
+      .then((res) => res.json())
+      .then((data) => setWindowTitles(data.titles))
+      .catch((err) => console.error("Error fetching window titles:", err));
     setSelectedWindow(event.target.value);
   };
 

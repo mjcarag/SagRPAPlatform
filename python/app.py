@@ -6,6 +6,7 @@ import time
 from flask_cors import CORS
 import json
 import pygetwindow as gw
+import pyautogui
 
 
 app = Flask(__name__)
@@ -54,6 +55,13 @@ def Controls():
 
 @app.route('/capture_screenshot', methods=['GET'])
 def capture_screenshot():
+    data = request.json
+    app_window = gw.getWindowsWithTitle(data['window'])[0]
+
+    if app_window:
+        app_window.activate()
+        time.sleep(1)
+        
     """Trigger PyQt5 Snipping Tool and return a new filename."""
     timestamp = int(time.time())  # Unique filename
     screenshot_filename = f"snip_{timestamp}.png"
