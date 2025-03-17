@@ -206,12 +206,14 @@ const App = () => {
       let imagePath = "";
       let actionKey = "";
       let appwindow = "";
+      let keyboard = "";
       if (value) {
         try {
           const parsed = JSON.parse(value);
           imagePath = parsed.image || ""; 
           actionKey = parsed.action || "";
           appwindow = parsed.window || "";
+          keyboard = parsed.keyboard || "";
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
@@ -224,6 +226,7 @@ const App = () => {
         order: index + 1,
         imagePath: imagePath,
         window: appwindow,
+        keyboard: keyboard,
       };
     });
   

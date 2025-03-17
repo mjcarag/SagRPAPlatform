@@ -109,11 +109,12 @@ for i in range(1, 13):
     key_map[f"f{i}"] = f"f{i}"
 
 def simulate_keystrokes(keys):
+    print(f"Keys: {keys}")
     key_sequence = [key.strip() for key in keys.split('+')]
-
+    print(f"Key sequence: {key_sequence}")
     for key in key_sequence:
         mapped_key = key_map.get(key.lower(), key)
-
+        print(f"Mapped key: {mapped_key}")
         if len(key) == 1 or key.isalpha() or key.isspace(): #for typing
             print(f"Typing: {key}")
             pyautogui.write(key)
@@ -132,12 +133,14 @@ def simulate_keystrokes(keys):
         else:
             # Handle special keys (like "Enter", "Backspace", etc.)
             if mapped_key:
-                pyautogui.press(mapped_key)
+                print(f"Pressing: {mapped_key}")
+                pyautogui.write(mapped_key)
 
 
 def main(jsondata):
     # with open(r'D:\Office Works\VSC\RPAUI\GithubBB\python\static\Testing\test.json') as json_file:
         # jsondata = json.load(json_file)
+        print(jsondata)
         for item in jsondata:
             print(item['imagePath'])
             if item['action'] != '':
@@ -148,7 +151,8 @@ def main(jsondata):
                 )
             elif item['keyboard'] != '':
                 activate_window(item['window'])
-                simulate_keystrokes(item['keys'])
+                print(item['keyboard'])
+                simulate_keystrokes(item['keyboard'])
             time.sleep(2)
 
 if __name__ == "__main__":
@@ -157,7 +161,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         json_string = sys.argv[1]
         data = json.loads(json_string)
-        time.sleep(5)
         main(data)
     else:
         print("No JSON data provided!")
