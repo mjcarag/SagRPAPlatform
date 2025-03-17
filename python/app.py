@@ -53,7 +53,7 @@ def Controls():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/capture_screenshot', methods=['GET'])
+@app.route('/capture_screenshot', methods=['GET', 'POST'])
 def capture_screenshot():
     data = request.json
     app_window = gw.getWindowsWithTitle(data['window'])[0]

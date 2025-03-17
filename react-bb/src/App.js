@@ -107,7 +107,13 @@ const App = () => {
   };
   
   const captureScreenshot = () => {
-    fetch("http://127.0.0.1:5000/capture_screenshot")
+    const paramWindow = { window: selectedWindow };
+
+    fetch("http://127.0.0.1:5000/capture_screenshot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(paramWindow),
+    })
       .then((response) => response.json())
       .then((data) => {
         console.log("Screenshot Triggered:", data);
