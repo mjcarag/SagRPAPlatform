@@ -19,10 +19,11 @@ Ensure you have Node.js and npm or yarn installed.
    
 2. Install Dependencies:
    ```sh
+   npm install --global yarn
    npm install @hello-pangea/dnd
    npm install react-icons
    yarn add react-bootstrap bootstrap
-   npm install --global yarn
+  
 3. Install requirements.txt
    ```sh
    pip install -r requirements.txt
