@@ -281,14 +281,14 @@ const App = () => {
       <Navbar fixed="top" className="bg-topNav" >
         <Container fluid>
           <Navbar.Brand href="#home" className="topNav-text"> Bautomation Banywhere</Navbar.Brand>
-         
+         {/*
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
             <Nav>
               <Nav.Link href="#features" className="topNav-text">Features</Nav.Link>
               <Nav.Link href="#pricing" className="topNav-text">Pricing</Nav.Link>
             </Nav>
-          </Navbar.Collapse>
+          </Navbar.Collapse>*/}
         </Container>
       </Navbar>
       {/* <Button variant="dark" className="sidebar-toggle mt-5" onClick={() => setSideBarToggle(true)}>
