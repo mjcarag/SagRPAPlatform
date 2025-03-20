@@ -1,0 +1,9 @@
+Flask
+flask_cors
+PyQt5
+pyautogui
+opencv-python
+numpy
+mss
+pywinauto
+pynput
