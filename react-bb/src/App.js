@@ -26,6 +26,10 @@ const App = () => {
   const [selectedWindow, setSelectedWindow] = useState("");
   const serverIP = "http://localhost:5000/";
 
+  // Testing
+  const [properties, setProperties] = useState(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+
   useEffect(() => {
     // Clear localStorage on load
     localStorage.clear();
@@ -35,6 +39,39 @@ const App = () => {
       .catch((err) => console.error("Error fetching window titles:", err));
 
   }, []);
+
+  const startCapture = async () => {
+    setIsCapturing(true);
+    const paramWindow = { window: selectedWindow };
+    fetch("http://127.0.0.1:5000/start-captureElement", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(paramWindow),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Screenshot Triggered:");
+      })
+      .catch((error) => {
+        console.error("Error:", error)
+        setIsCapturing(false);
+      });
+  };
+
+  const fetchProperties = async () => {
+    fetch(serverIP + "get-Elementproperties")
+      .then((res) => res.json())
+      .then((data) => {
+        // setWindowTitles(data.titles)
+        // if (data.status === "success") {
+          setProperties(data);
+        // } else {
+        //     alert('No control captured yet. Please try again.');
+        // }
+      })
+      .catch((err) => console.error("Error fetching window titles:", err));
+    setIsCapturing(false);
+  };
 
   const handleSelectChangeWindow = (event) => {
     fetch(serverIP + "window-titles")
@@ -362,7 +399,27 @@ const App = () => {
           </DragDropContext>
         </Container>
         
-
+        <h1>UI Element Inspector</h1>
+          <Form.Select onChange={handleSelectChangeWindow} value={selectedWindow}>
+                  <option value="">Choose a window</option>
+                  {windowTitles.map((title, index) => (
+                    <option key={index} value={title}>
+                      {title}
+                    </option>
+                  ))}
+          </Form.Select>
+            <div>
+                <button onClick={startCapture} disabled={isCapturing}>
+                    {isCapturing ? 'Capturing...' : 'Capture UI Element'}
+                </button>
+                {isCapturing && <button onClick={fetchProperties}>Get Properties</button>}
+            </div>
+            {properties && (
+                <div>
+                    <h2>Properties</h2>
+                    <pre>{JSON.stringify(properties, null, 2)}</pre>
+                </div>
+            )}
       </main>      
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
         <Offcanvas.Header closeButton>
