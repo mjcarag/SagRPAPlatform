@@ -7,15 +7,32 @@ from flask_cors import CORS
 import json
 import pygetwindow as gw
 import pyautogui
+from scripts.ElementSelector import ElementSelector
 
 
 app = Flask(__name__)
 CORS(app)
+element_selector = ElementSelector()
 
 UPLOAD_FOLDER = "static/screenshots"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 items = []
+
+@app.route('/start-captureElement', methods=['POST','GET'])
+def captureElement():
+    data = request.json
+    app_window = gw.getWindowsWithTitle(data['window'])[0]
+    print(app_window)
+    app_window.activate()
+    time.sleep(1)
+    element_selector.start_captureElement()
+    return jsonify({"status": "success", "message": "Listening for mouse clicks..."})
+
+@app.route('/get-Elementproperties', methods=['GET'])
+def get_Elementproperties():
+    properties = element_selector.get_Elementproperties()
+    return jsonify(properties)
 
 @app.route('/api/items', methods=['POST'])
 def add_item():
@@ -45,7 +62,7 @@ def Controls():
         # Convert JSON data to a string and pass it as an argument
         
         process = subprocess.Popen(
-            ["python", "CaptureClicks.py", json.dumps(data)], 
+            ["python", "scripts/CaptureClicks.py", json.dumps(data)], 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
 
@@ -73,7 +90,7 @@ def capture_screenshot():
     screenshot_path = os.path.join(UPLOAD_FOLDER, screenshot_filename)
 
     # Run PyQt5 snipping tool and pass the filename as an argument
-    subprocess.Popen(["python", "snip.py", screenshot_path])  
+    subprocess.Popen(["python", "scripts/snip.py", screenshot_path])  
 
     return jsonify({"message": "Snipping tool started!", "filename": screenshot_filename})
 
