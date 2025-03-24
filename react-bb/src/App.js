@@ -43,7 +43,7 @@ const App = () => {
   const startCapture = async () => {
     setIsCapturing(true);
     const paramWindow = { window: selectedWindow };
-    fetch("http://127.0.0.1:5000/start-captureElement", {
+    fetch(serverIP + "start-captureElement", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(paramWindow),
@@ -109,6 +109,7 @@ const App = () => {
   const handleKeyPress = (key) => {
     setInputValue((prev) => prev + (prev ? " + " : "") + key);
   };
+
   const handleInputChange = (e) => {
       const data = {
         action: action,
@@ -124,7 +125,18 @@ const App = () => {
           itm.id === selectedItem.id ? { ...itm, action: ` >> ${inputValue}` } : itm
         )
       );
+      
+      fetch("http://localhost:5000/api/save_Action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      .then(() => {
+        console.log("Data saved successfully!");
+      })
+      .catch((error) => console.error("Error:", error));
 
+      
     setInputValue(e.target.value);
   };
   const functionKeys = [

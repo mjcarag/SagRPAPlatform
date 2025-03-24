@@ -8,11 +8,18 @@ import json
 import pygetwindow as gw
 import pyautogui
 from scripts.ElementSelector import ElementSelector
-
+from pymongo import MongoClient
+import uuid
 
 app = Flask(__name__)
 CORS(app)
 element_selector = ElementSelector()
+
+
+client = MongoClient("mongodb+srv://carjlight:fx8njvXcaY9L29nS@bbcluster.fd7s6.mongodb.net/?retryWrites=true&w=majority&appName=BBCluster")
+db = client["BB_DB"]
+collection = db["BB_Data"]
+
 
 UPLOAD_FOLDER = "static/screenshots"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -101,5 +108,15 @@ def get_screenshot(filename):
     if os.path.exists(screenshot_path):
         return send_from_directory(UPLOAD_FOLDER, filename)
     return "No screenshot available", 404
+
+@app.route('/api/save_Action', methods=['POST'])
+def save_Action():
+    data = request.json  # Parse JSON data
+    if data:
+        data['_id'] = 1
+        collection.insert_one(data)  # Save to MongoDB
+        return jsonify({"message": "Data saved successfully!"}), 201
+    return jsonify({"message": "Invalid data!"}), 400
+
 
 app.run(host="0.0.0.0", port=5000,  debug=True)
