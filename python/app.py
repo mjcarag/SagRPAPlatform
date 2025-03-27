@@ -113,9 +113,9 @@ def get_screenshot(filename):
 def save_Action():
     data = request.json  # Parse JSON data
     if data:
-        data['_id'] = 1
+        data['_id'] = str(uuid.uuid4())
         collection.insert_one(data)  # Save to MongoDB
-        return jsonify({"message": "Data saved successfully!"}), 201
+        return jsonify({"message": "Data saved successfully!", "id": data['_id']}), 201
     return jsonify({"message": "Invalid data!"}), 400
 
 

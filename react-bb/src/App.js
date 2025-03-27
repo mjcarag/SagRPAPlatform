@@ -245,6 +245,20 @@ const App = () => {
       .catch((err) => console.error("Error adding item:", err));
 
   };
+
+  const addItemKeyStroke = () => {
+    const newItem = { content: `KeyStroke ${items.length + 1}` };
+
+    fetch("http://127.0.0.1:5000/api/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newItem),
+    })
+      .then((res) => res.json())
+      .then((data) => setItems([...items, data]))
+      .catch((err) => console.error("Error adding item:", err));
+
+  };
   
 
 
@@ -348,6 +362,7 @@ const App = () => {
         <h3>Controls</h3>
         <ul className="sidebar-menu">
           <li  onClick={addItem}><CiCamera  /> Capture</li>
+          <li  onClick={addItemKeyStroke}><BsKeyboard  /> Key Stroke</li>
           <li><FaList /> Actions</li>
           <li><FaCog /> Settings</li>
           <li className="logout"><FaSignOutAlt /> Logout</li>
