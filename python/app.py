@@ -44,7 +44,7 @@ def get_Elementproperties():
 @app.route('/api/items', methods=['POST'])
 def add_item():
     data = request.json
-    new_item = {"id": str(len(items) + 1), "content": data['content']}
+    new_item = {"id": str(len(items) + 1), "content": data['content'], "actionType": data['actionType']}
     items.append(new_item)
     return jsonify(new_item)
 

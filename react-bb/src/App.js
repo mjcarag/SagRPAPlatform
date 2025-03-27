@@ -81,30 +81,30 @@ const App = () => {
     setSelectedWindow(event.target.value);
   };
 
-  const handleActionSelect = (e) => {
-    if (e.target.value === "mouseClick"){
-      setInputValue("");
+  // const handleActionSelect = (e) => {
+  //   if (e.target.value === "mouseClick"){
+  //     setInputValue("");
       
-    }else{
-      setAction("");
-    }
-    const data = {
-      action: action,
-      image: screenshot,
-      keyboard: inputValue,
-      window: selectedWindow,
-    };
+  //   }else{
+  //     setAction("");
+  //   }
+  //   const data = {
+  //     action: action,
+  //     image: screenshot,
+  //     keyboard: inputValue,
+  //     window: selectedWindow,
+  //   };
 
-    localStorage.setItem(selectedItem.content, JSON.stringify(data));
+  //   localStorage.setItem(selectedItem.content, JSON.stringify(data));
 
-    setItems((prevItems) =>
-      prevItems.map((itm) =>
-        itm.id === selectedItem.id ? { ...itm, action: ` >> ${action}` } : itm
-      )
-    );
+  //   setItems((prevItems) =>
+  //     prevItems.map((itm) =>
+  //       itm.id === selectedItem.id ? { ...itm, action: ` >> ${action}` } : itm
+  //     )
+  //   );
     
-    setSelectedAction(e.target.value);
-  };
+  //   setSelectedAction(e.target.value);
+  // };
 
   const handleKeyPress = (key) => {
     setInputValue((prev) => prev + (prev ? " + " : "") + key);
@@ -218,6 +218,10 @@ const App = () => {
     setSelectedItem(item);
     setShowOffcanvas(true);
     const storedItem = localStorage.getItem(`${item.content}`); 
+    console.log(item);
+    setSelectedAction(item.actionType);
+
+
     if (storedItem) {
       const storedData = JSON.parse(storedItem);
       setAction(storedData.action);
@@ -233,7 +237,7 @@ const App = () => {
   };
 
   const addItem = () => {
-    const newItem = { content: `Image ${items.length + 1}` };
+    const newItem = { content: `Image ${items.length + 1}`, actionType: "capture" };
 
     fetch("http://127.0.0.1:5000/api/items", {
       method: "POST",
@@ -247,7 +251,7 @@ const App = () => {
   };
 
   const addItemKeyStroke = () => {
-    const newItem = { content: `KeyStroke ${items.length + 1}` };
+    const newItem = { content: `KeyStroke ${items.length + 1}`, actionType: "keyStroke"  };
 
     fetch("http://127.0.0.1:5000/api/items", {
       method: "POST",
@@ -368,8 +372,6 @@ const App = () => {
           <li className="logout"><FaSignOutAlt /> Logout</li>
         </ul>
       </aside>
-
-
       {/* Main content */}
       <main>  
         <Container fluid>
@@ -406,7 +408,7 @@ const App = () => {
                               padding: 10, margin: "5px auto", background: "#fff",
                               borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
                               textAlign: "center", cursor: "pointer", ...provided.draggableProps.style
-                            }}play
+                            }}play="true"
                           >
                             {item.content} {item.action}
                           </div>
@@ -470,6 +472,9 @@ const App = () => {
               )}
               <CiEdit onClick={() => setIsEditing(true)} className="edit-icon" />
           </div>
+         
+          {selectedAction === "capture" && (
+            <>  
           <Row className="mb-2">
             <Col>
               <Form.Select onChange={handleSelectChangeWindow} value={selectedWindow}>
@@ -483,18 +488,6 @@ const App = () => {
               {/* {selectedWindow && <p>Selected Window: {selectedWindow}</p>} */}
             </Col>
           </Row>
-          
-            <Row className="mb-2"> 
-              <Col>
-                <Form.Select aria-label="ActionSelect" onChange={handleActionSelect}>
-                  <option selected={action === ""} disabled>Choose Action</option>
-                  <option value="mouseClick">Mouse Click</option>
-                  <option value="keyStroke">Key Stroke</option>
-                </Form.Select>
-              </Col>
-            </Row>  
-
-            {selectedAction === "mouseClick" && (
               <Row className="mb-2"> 
                 <Col>
                   <Form.Select aria-label="ActionSelect" onChange={actionOnChange} disabled={isDisabled}>
@@ -506,8 +499,19 @@ const App = () => {
                   </Form.Select>
                 </Col>
               </Row>
-            )}
-            {selectedAction === "keyStroke" && (
+            <Row className="mt-3">
+              <Col>
+                <Image src={screenshot} rounded alt="Screenshot" style={{ width: "100%", maxWidth: "500px" }}/>
+              </Col>
+            </Row>
+            <Row className="mt-3">
+              <Col className="d-flex justify-content-end">
+                <Button variant="danger" onClick={captureScreenshot}> <BsRecordCircle /> Capture</Button>
+              </Col>
+            </Row>
+            </>
+             )}
+             {selectedAction === "keyStroke" && (
               <Row> 
                 <Col>
                   <InputGroup className="mb-3">
@@ -527,16 +531,6 @@ const App = () => {
                 </Col>
               </Row>
              )}
-            <Row className="mt-3">
-              <Col>
-                <Image src={screenshot} rounded alt="Screenshot" style={{ width: "100%", maxWidth: "500px" }}/>
-              </Col>
-            </Row>
-            <Row className="mt-3">
-              <Col className="d-flex justify-content-end">
-                <Button variant="danger" onClick={captureScreenshot}> <BsRecordCircle /> Capture</Button>
-              </Col>
-            </Row>
         </Offcanvas.Body>
       </Offcanvas>
     </div>
