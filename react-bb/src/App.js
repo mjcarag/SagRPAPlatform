@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Nav, Navbar, Offcanvas, Form, Image, Row, Col, Popover, OverlayTrigger, InputGroup } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+
 import { FaArrowDown, FaPlay, FaList, FaCog, FaSignOutAlt  } from "react-icons/fa";
 import { BsRecordCircle, BsKeyboard } from "react-icons/bs";
-import { CiEdit, CiCamera  } from "react-icons/ci";
+import { CiEdit, CiCamera, CiGrid42  } from "react-icons/ci";
 import { FaFloppyDisk } from "react-icons/fa6";
+
 import "./App.css";
 import "./keyboard.css";
 
@@ -20,6 +22,8 @@ const App = () => {
   const [sidebarRef, setSidebarRef] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(selectedItem.content);
+  const [isEditingProject, setIsEditingProject] = useState(false);
+  const [editedProject, setEditedProject] = useState("Project Name");
   const [inputValue, setInputValue] = useState("");
   const [selectedAction, setSelectedAction] = useState("");
   const [windowTitles, setWindowTitles] = useState([]);
@@ -56,6 +60,8 @@ const App = () => {
         console.error("Error:", error)
         setIsCapturing(false);
       });
+
+
   };
 
   const fetchProperties = async () => {
@@ -126,15 +132,15 @@ const App = () => {
         )
       );
       
-      fetch("http://localhost:5000/api/save_Action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-      .then(() => {
-        console.log("Data saved successfully!");
-      })
-      .catch((error) => console.error("Error:", error));
+      // fetch( serverIP + "api/save_Action", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(data),
+      // })
+      // .then(() => {
+      //   console.log("Data saved successfully!");
+      // })
+      // .catch((error) => console.error("Error:", error));
 
       
     setInputValue(e.target.value);
@@ -169,11 +175,15 @@ const App = () => {
 
     setIsEditing(false);
   };
+
+  const editProjectName = () => {
+    setIsEditing(false);
+  };
   
   const captureScreenshot = () => {
     const paramWindow = { window: selectedWindow };
 
-    fetch("http://127.0.0.1:5000/capture_screenshot", {
+    fetch(serverIP + "capture_screenshot", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(paramWindow),
@@ -187,7 +197,7 @@ const App = () => {
   };
 
   const fetchScreenshot = (filename) => {
-    const imageUrl = `http://127.0.0.1:5000/get_screenshot/${filename}`;
+    const imageUrl = serverIP + `get_screenshot/${filename}`;
   
     const checkFileExists = () => {
       fetch(imageUrl, { method: "HEAD" }) 
@@ -239,7 +249,7 @@ const App = () => {
   const addItem = () => {
     const newItem = { content: `Image ${items.length + 1}`, actionType: "capture" };
 
-    fetch("http://127.0.0.1:5000/api/items", {
+    fetch(serverIP + "api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newItem),
@@ -253,7 +263,7 @@ const App = () => {
   const addItemKeyStroke = () => {
     const newItem = { content: `KeyStroke ${items.length + 1}`, actionType: "keyStroke"  };
 
-    fetch("http://127.0.0.1:5000/api/items", {
+    fetch(serverIP + "api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newItem),
@@ -264,6 +274,33 @@ const App = () => {
 
   };
   
+  const addItemUI = () => {
+    const newItem = { content: `UIElement ${items.length + 1}`, actionType: "UIElement"  };
+
+    fetch(serverIP + "api/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newItem),
+    })
+      .then((res) => res.json())
+      .then((data) => setItems([...items, data]))
+      .catch((err) => console.error("Error adding item:", err));
+
+  };
+
+  const DeleteDB = () => {
+    const newItem = { content: `UIElement ${items.length + 1}`, actionType: "UIElement"  };
+
+    fetch(serverIP + "api/emptyDB", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newItem),
+    })
+      .then((res) => res.json())
+      .then((data) => setItems([...items, data]))
+      .catch((err) => console.error("Error adding item:", err));
+
+  };
 
 
   const runMain = () => {
@@ -350,12 +387,12 @@ const App = () => {
           <Navbar.Brand href="#home" className="topNav-text"> Bautomation Banywhere</Navbar.Brand>
          
           <Navbar.Toggle />
-          <Navbar.Collapse className="justify-content-end">
+          {/* <Navbar.Collapse className="justify-content-end">
             <Nav>
               <Nav.Link href="#features" className="topNav-text">Features</Nav.Link>
               <Nav.Link href="#pricing" className="topNav-text">Pricing</Nav.Link>
             </Nav>
-          </Navbar.Collapse>
+          </Navbar.Collapse> */}
         </Container>
       </Navbar>
       {/* <Button variant="dark" className="sidebar-toggle mt-5" onClick={() => setSideBarToggle(true)}>
@@ -367,6 +404,7 @@ const App = () => {
         <ul className="sidebar-menu">
           <li  onClick={addItem}><CiCamera  /> Capture</li>
           <li  onClick={addItemKeyStroke}><BsKeyboard  /> Key Stroke</li>
+          <li  onClick={addItemUI}><CiGrid42   /> UI Element</li>
           <li><FaList /> Actions</li>
           <li><FaCog /> Settings</li>
           <li className="logout"><FaSignOutAlt /> Logout</li>
@@ -376,10 +414,28 @@ const App = () => {
       <main>  
         <Container fluid>
           <Row>
-           
             <Col>
-              <Button variant="danger" onClick={runMain} className="top-buttons me-2"><FaPlay  /> Run</Button>
+              <div className="editable-container">
+                  {isEditingProject ? (
+                      <input
+                        type="text"
+                        value={editedProject} // Bind the input value to `editedProject`
+                        onChange={(e) => setEditedProject(e.target.value)} // Update state on change
+                        onBlur={editProjectName} // Save when input loses focus
+                        autoFocus
+                        className="editable-input"
+                      />
+                  ) : (
+                      <h5 className="editable-text">
+                          {editedProject}
+                      </h5>
+                  )}
+                  <CiEdit onClick={() => setIsEditingProject(true)} className="edit-icon" />
+              </div>
+            </Col>
+            <Col className="text-end">
               <Button variant="success" onClick={addItem} className="top-buttons"><FaFloppyDisk  /> Save</Button>
+              <Button variant="danger" onClick={runMain} className="top-buttons me-2"><FaPlay  /> Run</Button>
             </Col>
           </Row>
           
@@ -428,27 +484,7 @@ const App = () => {
           </DragDropContext>
         </Container>
         
-        <h1>UI Element Inspector</h1>
-          <Form.Select onChange={handleSelectChangeWindow} value={selectedWindow}>
-                  <option value="">Choose a window</option>
-                  {windowTitles.map((title, index) => (
-                    <option key={index} value={title}>
-                      {title}
-                    </option>
-                  ))}
-          </Form.Select>
-            <div>
-                <button onClick={startCapture} disabled={isCapturing}>
-                    {isCapturing ? 'Capturing...' : 'Capture UI Element'}
-                </button>
-                {isCapturing && <button onClick={fetchProperties}>Get Properties</button>}
-            </div>
-            {properties && (
-                <div>
-                    <h2>Properties</h2>
-                    <pre>{JSON.stringify(properties, null, 2)}</pre>
-                </div>
-            )}
+      
       </main>      
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
         <Offcanvas.Header closeButton>
@@ -530,6 +566,73 @@ const App = () => {
                   </InputGroup>
                 </Col>
               </Row>
+             )}
+             {selectedAction === "UIElement" && (
+              <>  
+                <Row className="mb-2">
+                  <Col>
+                    <Form.Select onChange={handleSelectChangeWindow} value={selectedWindow}>
+                      <option value="">Choose a window</option>
+                      {windowTitles.map((title, index) => (
+                        <option key={index} value={title}>
+                          {title}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    {/* {selectedWindow && <p>Selected Window: {selectedWindow}</p>} */}
+                  </Col>
+                </Row>
+                <Row className="mb-2"> 
+                  <Col>
+                    <Form.Select aria-label="ActionSelect" onChange={actionOnChange} >
+                      <option selected={action === ""} disabled>Choose Action</option>
+                      <option value="Left Click">Left Click</option>
+                      <option value="Right Click">Right Click</option>
+                      <option value="Double Left Click">Double Left Click</option>
+                      <option value="Double Right Click">Double Right Click</option>
+                    </Form.Select>
+                  </Col>
+                </Row>
+                <Row className="mt-3">
+                  <Col>
+                  {properties && (
+                    <div>
+                      <select className="form-select">
+                        {Object.entries(properties).map(([key, value], index) => {
+                          if (typeof value === "object" && value !== null) {
+                            return Object.entries(value).map(([nestedKey, nestedValue], nestedIndex) => (
+                              <option key={`${index}-${nestedIndex}`} value={nestedValue}>
+                                {key}.{nestedKey}: {nestedValue}
+                              </option>
+                            ));
+                          } else {
+                            return (
+                              <option key={index} value={value}>
+                                {key}: {value}
+                              </option>
+                            );
+                          }
+                        })}
+                      </select>
+                    </div>
+                  )}
+                  </Col>
+                </Row>
+                <Row className="mt-3">
+                  <Col className="d-flex justify-content-end">
+                    
+                    <Button className="me-2" 
+                            variant="danger" 
+                            onClick={async () => {
+                              await startCapture(); 
+                            }}
+                        disabled={isCapturing}>
+                        {isCapturing ? 'Capturing...' : 'Capture UI Element'}
+                    </Button>
+                    {isCapturing && <Button onClick={fetchProperties} >Get Properties</Button>}
+                  </Col>
+                </Row>
+              </>
              )}
         </Offcanvas.Body>
       </Offcanvas>

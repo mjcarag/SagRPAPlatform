@@ -163,5 +163,11 @@ def save_Action():
         return jsonify({"message": "Data saved successfully!", "id": data['_id']}), 201
     return jsonify({"message": "Invalid data!"}), 400
 
+@app.route('/api/emptyDB', methods=['POST'])
+def delete_db():
+    collection.delete_many({})
+    return jsonify({"message": "Removed!"}), 201
+   
+
 
 app.run(host="0.0.0.0", port=5000,  debug=True)
