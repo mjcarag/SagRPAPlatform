@@ -14,8 +14,28 @@ def activate_window(app_title):
     print(windows)
     if window:
         app_window = window[0]
-        app_window.activate()
-        time.sleep(1)
+
+        if app_window.isMinimized:
+            app_window.restore()
+            time.sleep(1)
+
+        for _ in range(3):  # Retry up to 3 times
+            try:
+                app_window.activate()
+                time.sleep(0.3)
+                if app_window.isActive:
+                    return True
+                app_window.minimize()
+                time.sleep(0.2)
+                app_window.restore()
+                time.sleep(0.3)
+                
+            except Exception:
+                time.sleep(0.5)
+                continue
+
+        # app_window.activate()
+        # time.sleep(1)
 
 def Capture_Click(imagePath,app_title,clickType):
     activate_window(app_title)
@@ -59,26 +79,6 @@ def Capture_Click(imagePath,app_title,clickType):
     # pyautogui.click()
     print(f"Button clicked at: ({button_center_x}, {button_center_y})")
  
- 
-# if __name__ == "__main__":
-#     # Capture_Click('D:\Office Works\VSC\PyAutoGUI\Screenshot\Menu.png','Home - Workday','left',False)
-#     # time.sleep(2)
-#     # Capture_Click('D:\Office Works\VSC\PyAutoGUI\Screenshot\expenseHub.png','Home - Workday','left',False)
-#     # time.sleep(2)
-#     # Capture_Click('D:\Office Works\VSC\PyAutoGUI\Screenshot\expenseReport.png','Overview - Workday','left',False)
-#     # time.sleep(2)
-#     # Capture_Click('D:\Office Works\VSC\PyAutoGUI\Screenshot\expenseCreateReport.png','My Expense Reports - Workday','left',False)
-#     time.sleep(5)
-#     with open(r'D:\Office Works\VSC\RPAUI\react-bb\python\static\Testing\test.json') as json_file:
-#             data = json.load(json_file)
-#             for item in data['screenshots']:
-#                 Capture_Click(
-#                     item['path'],
-#                     item['title'],
-#                     item['position'],
-#                     item['visible']
-#                 )
-#                 time.sleep(2)
 
 key_map = {
     "ctrl": "ctrl",
@@ -108,33 +108,59 @@ key_map = {
 for i in range(1, 13):
     key_map[f"f{i}"] = f"f{i}"
 
+# def simulate_keystrokes(keys):
+#     print(f"Keys: {keys}")
+#     key_sequence = [key.strip() for key in keys.split('+')]
+#     print(f"Key sequence: {key_sequence}")
+#     for key in key_sequence:
+#         mapped_key = key_map.get(key.lower(), key)
+#         print(f"Mapped key: {mapped_key}")
+#         if len(key) == 1 or key.isalpha() or key.isspace(): #for typing
+#             print(f"Typing: {key}")
+#             pyautogui.write(key)
+#             # time.sleep(0.05)
+#         elif len(key_sequence) > 1:# for combokeys like ctrl+c
+            
+#             mapped_keys = [key_map.get(k.lower(), k) for k in key_sequence]
+#             if all(mapped_keys):
+#                 print(f"Holding combo: {mapped_keys}")
+#                 for k in mapped_keys:
+#                     pyautogui.keyDown(k)
+#                 time.sleep(0.1)
+#                 for k in mapped_keys:
+#                     pyautogui.keyUp(k)
+#                 break
+#         else:
+#             # Handle special keys (like "Enter", "Backspace", etc.)
+#             if mapped_key:
+#                 print(f"Pressing: {mapped_key}")
+#                 pyautogui.write(mapped_key)
+
 def simulate_keystrokes(keys):
     print(f"Keys: {keys}")
     key_sequence = [key.strip() for key in keys.split('+')]
     print(f"Key sequence: {key_sequence}")
-    for key in key_sequence:
+    
+    if len(key_sequence) > 1:
+        mapped_keys = []
+        for key in key_sequence:
+            mapped_key = key_map.get(key.lower(), key)
+            mapped_keys.append(mapped_key)
+        
+        print(f"Pressing combo: {'+'.join(mapped_keys)}")
+        for key in mapped_keys:
+            pyautogui.keyDown(key)
+        for key in reversed(mapped_keys):
+            pyautogui.keyUp(key)
+    else:
+        key = key_sequence[0]
         mapped_key = key_map.get(key.lower(), key)
-        print(f"Mapped key: {mapped_key}")
-        if len(key) == 1 or key.isalpha() or key.isspace(): #for typing
+        if len(key) == 1 or key.isalpha() or key.isspace():
             print(f"Typing: {key}")
             pyautogui.write(key)
-            # time.sleep(0.05)
-        elif len(key_sequence) > 1:# for combokeys like ctrl+c
-            
-            mapped_keys = [key_map.get(k.lower(), k) for k in key_sequence]
-            if all(mapped_keys):
-                print(f"Holding combo: {mapped_keys}")
-                for k in mapped_keys:
-                    pyautogui.keyDown(k)
-                time.sleep(0.1)
-                for k in mapped_keys:
-                    pyautogui.keyUp(k)
-                break
-        else:
-            # Handle special keys (like "Enter", "Backspace", etc.)
-            if mapped_key:
-                print(f"Pressing: {mapped_key}")
-                pyautogui.write(mapped_key)
+        elif mapped_key:
+            print(f"Pressing: {mapped_key}")
+            pyautogui.press(mapped_key)
 
 
 def main(jsondata):
