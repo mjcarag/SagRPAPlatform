@@ -29,12 +29,57 @@ items = []
 @app.route('/start-captureElement', methods=['POST','GET'])
 def captureElement():
     data = request.json
+    try:
+        # Get all windows with matching title
+        # windows = gw.getWindowsWithTitle(data['window'])
+        app_window = gw.getWindowsWithTitle(data['window'])[0]
+        if not app_window:
+            return jsonify({"status": "error", "message": f"Window '{data['window']}' not found"}), 404
+        
+        # app_window = windows[0]
+        # app_window = gw.getWindowsWithTitle(data['window'])[0]
+        print(app_window)
+        app_window.activate()
+        
+
+        try:
+            if app_window.isMinimized:
+                app_window.restore()
+            app_window.activate()
+            
+            # Alternative activation method if the first fails
+            if not app_window.isActive:
+                app_window.minimize()
+                app_window.restore()
+                app_window.activate()
+            
+            time.sleep(1)  # Reduced wait time
+        except Exception as e:
+            return jsonify({
+                "status": "error", 
+                "message": f"Failed to activate window: {str(e)}"
+            }), 500
+    
+
+        element_selector.start_captureElement()
+        return jsonify({"status": "success", "message": "Listening for mouse clicks..."})
+
+    except Exception as e:
+        return jsonify({
+            "status": "error", 
+            "message": f"Unexpected error: {str(e)}"
+        }), 500
+
+@app.route('/execute-action', methods=['POST'])
+def execute_action():
+    data = request.json
     app_window = gw.getWindowsWithTitle(data['window'])[0]
     print(app_window)
     app_window.activate()
     time.sleep(1)
-    element_selector.start_captureElement()
-    return jsonify({"status": "success", "message": "Listening for mouse clicks..."})
+    action = data.get("action", "")
+    keyboard_text = data.get("keyboard", "")
+    element_selector.execute_action(action, keyboard_text)
 
 @app.route('/get-Elementproperties', methods=['GET'])
 def get_Elementproperties():

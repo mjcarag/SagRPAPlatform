@@ -1,5 +1,5 @@
 from pynput import mouse
-from pywinauto import Desktop
+from pywinauto import Desktop, Application
 import tkinter as tk
 import threading
 
@@ -30,11 +30,8 @@ class ElementSelector:
     def on_click(self, x, y, button, pressed):
         """Handle mouse click events."""
         if pressed:
-            # Get the control under the mouse cursor
             control = Desktop(backend='uia').from_point(x, y)
             bounds = control.element_info.rectangle
-
-            # Convert RECT to a dictionary
             bounds_dict = {
                 "left": bounds.left,
                 "top": bounds.top,
@@ -49,23 +46,19 @@ class ElementSelector:
                 "automation_id": control.element_info.automation_id,
                 "name": control.element_info.name,
                 "value": control.get_value() if hasattr(control, 'get_value') else None,
-                "bounds": bounds_dict  # Use the serializable dictionary
+                "bounds": bounds_dict
             }
 
-            # Draw a highlight rectangle around the control
-            self.draw_highlight_rectangle(bounds)
 
+            self.draw_highlight_rectangle(bounds)
             return False  # Stop listener
 
     def start_captureElement(self):
         """Start listening for mouse clicks."""
         self.last_control_properties = None
-
-        # Start listening for mouse clicks in a separate thread
         def listen_for_clicks():
             with mouse.Listener(on_click=self.on_click) as listener:
                 listener.join()
-
         threading.Thread(target=listen_for_clicks).start()
 
     def get_Elementproperties(self):
@@ -74,3 +67,38 @@ class ElementSelector:
             return self.last_control_properties
         else:
             return {"status": "error", "message": "No control captured yet."}
+        
+
+    def click_element(self):
+        if self.last_control:
+            self.last_control.click_input()
+
+    def right_click_element(self):
+        if self.last_control:
+            self.last_control.click_input(button='right')
+
+    def double_click_element(self):
+        if self.last_control:
+            self.last_control.double_click_input()
+
+    def type_into_element(self, text):
+        if self.last_control:
+            self.last_control.type_keys(text)
+
+    def execute_action(self, action, keyboard_text=""):
+        if not self.last_control:
+            return {"status": "error", "message": "No element captured yet!"}
+
+        action = action.lower()
+        if action == "left click":
+            self.click_element()
+        elif action == "right click":
+            self.right_click_element()
+        elif action == "double click":
+            self.double_click_element()
+        elif action == "type" and keyboard_text:
+            self.type_into_element(keyboard_text)
+        else:
+            return {"status": "error", "message": f"Unsupported action: {action}"}
+
+        return {"status": "success", "message": f"Executed: {action}"}
