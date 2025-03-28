@@ -168,6 +168,14 @@ def delete_db():
     collection.delete_many({})
     return jsonify({"message": "Removed!"}), 201
    
+@app.route('/api/save_Project', methods=['POST'])
+def save_Project():
+    data = request.json  # Parse JSON data
+    if data:
+        data['_id'] = str(uuid.uuid4())
+        collection.insert_one(data)  # Save to MongoDB
+        return jsonify({"message": "Data saved successfully!", "id": data['_id']}), 201
+    return jsonify({"message": "Invalid data!"}), 400
 
 
 app.run(host="0.0.0.0", port=5000,  debug=True)

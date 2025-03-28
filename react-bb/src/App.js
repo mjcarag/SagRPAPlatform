@@ -336,10 +336,58 @@ const App = () => {
   
     console.log(JSON.stringify(orderedItems, null, 2));
 
-    fetch("http://127.0.0.1:5000/Controls", {
+    fetch(serverIP +  "/Controls", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderedItems),
+    })
+    .then((res) => res.json())
+    .then((data) => console.log(data))
+    .catch((err) => console.error("Error fetching items:", err));
+
+  };
+
+  const btnSave = () => {
+
+    const orderedItems = items.map((item, index) => {
+      const value = localStorage.getItem(item.content);
+      let imagePath = "";
+      let actionKey = "";
+      let appwindow = "";
+      let keyboard = "";
+      if (value) {
+        try {
+          const parsed = JSON.parse(value);
+          imagePath = parsed.image || ""; 
+          actionKey = parsed.action || "";
+          appwindow = parsed.window || "";
+          keyboard = parsed.keyboard || "";
+        } catch (err) {
+          console.error("Error parsing localStorage value:", err);
+        }
+      }
+    
+      return {
+        id: item.id,
+        projectName: editedProject,
+        content: item.content,
+        action: actionKey,
+        order: index + 1,
+        imagePath: imagePath,
+        window: appwindow,
+        keyboard: keyboard,
+      };
+    });
+    const finalDataStructure = {
+      [editedProject]: orderedItems // Wrap the orderedItems inside an object with projectName as the key
+    };
+    
+    console.log(JSON.stringify(finalDataStructure, null, 2));
+
+    fetch(serverIP + "/api/save_Project", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(finalDataStructure),
     })
     .then((res) => res.json())
     .then((data) => console.log(data))
@@ -434,7 +482,7 @@ const App = () => {
               </div>
             </Col>
             <Col className="text-end">
-              <Button variant="success" onClick={addItem} className="top-buttons"><FaFloppyDisk  /> Save</Button>
+              <Button variant="success" onClick={btnSave} className="top-buttons"><FaFloppyDisk  /> Save</Button>
               <Button variant="danger" onClick={runMain} className="top-buttons me-2"><FaPlay  /> Run</Button>
             </Col>
           </Row>
