@@ -10,6 +10,7 @@ import pyautogui
 from scripts.ElementSelector import ElementSelector
 from pymongo import MongoClient
 import uuid
+from pywinauto import Desktop, Application
 
 app = Flask(__name__)
 CORS(app)
@@ -103,29 +104,292 @@ def get_window_titles():
 def fetch_item():
     return jsonify(items)
 
-@app.route('/Controls', methods=['GET', 'POST'])
-def Controls():
-    data = request.json  # Get JSON data from request
+# @app.route('/Controls', methods=['GET', 'POST'])
+# def Controls():
+#     data = request.json  # Get JSON data from request
 
-    if not data:
-        return jsonify({"error": "No data received"}), 400
+#     if not data:
+#         return jsonify({"error": "No data received"}), 400
+
+#     try:
+#         # Convert JSON data to a string and pass it as an argument
+        
+#         process = subprocess.Popen(
+#             ["python", "scripts/CaptureClicks.py", json.dumps(data)], 
+#             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+#         )
+
+#         stdout, stderr = process.communicate()
+#         print(f"📥 Subprocess Output:\n{stdout}")
+#         print(f"📤 Subprocess Error:\n{stderr}")
+
+#         return jsonify({"message": "Action started!"})
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+@app.route('/Controls', methods=['POST'])
+def Controls():
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
 
     try:
-        # Convert JSON data to a string and pass it as an argument
+        data = request.get_json()
         
-        process = subprocess.Popen(
-            ["python", "scripts/CaptureClicks.py", json.dumps(data)], 
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-        )
+        # Validate the data structure
+        if not isinstance(data, list):
+            return jsonify({"error": "Expected an array of action items"}), 400
 
-        stdout, stderr = process.communicate()
-        print(f"📥 Subprocess Output:\n{stdout}")
-        print(f"📤 Subprocess Error:\n{stderr}")
+        results = []
+        
+        # Process each action item
+        for item in data:
+            try:
+                # Validate required fields
+                if not all(key in item for key in ['content', 'window']):
+                    results.append({
+                        "id": item.get('id', 'unknown'),
+                        "status": "error",
+                        "message": "Missing required fields"
+                    })
+                    continue
 
-        return jsonify({"message": "Action started!"})
+                window_title = item['window']
+                action = item.get('action', '').lower()
+                keyboard_text = item.get('keyboard', '')
+                image_path = item.get('imagePath', '')
+                content = item['content'].lower()
 
+                # Activate the target window first
+                try:
+                    app_window = gw.getWindowsWithTitle(window_title)
+                    if not app_window:
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": f"Window '{window_title}' not found"
+                        })
+                        continue
+                    
+                    app_window[0].activate()
+                    time.sleep(0.5)  # Small delay for window activation
+                except Exception as e:
+                    results.append({
+                        "id": item.get('id', 'unknown'),
+                        "status": "error",
+                        "message": f"Failed to activate window: {str(e)}"
+                    })
+                    continue
+
+                # Determine action type
+                # For UIElement actions
+                if "uielement" in content:
+                    if not action:
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": "No action specified for UIElement"
+                        })
+                        continue
+                    
+                    try:
+                        target_window = gw.getWindowsWithTitle(window_title)
+                        if not target_window:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "error",
+                                "message": f"Window '{window_title}' not found"
+                            })
+                            continue
+
+                        target_window[0].activate()
+                        time.sleep(0.5)
+                        app = Application(backend="uia").connect(title=window_title)
+                        automation_id = item.get('automationID', '')
+                        print(automation_id)
+                        if automation_id:
+                            control = app.window(title=window_title).child_window(auto_id=automation_id)
+                        # elif element_name:
+                        #     control = app.window(title=window_title).child_window(title=element_name)
+                        else:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "error",
+                                "message": "No automation_id or element_name provided"
+                            })
+                            continue
+                        
+                        # Wait for the control to exist
+                        control.wait('exists', timeout=5)
+
+                        action = action.lower()
+                        if action == "left click":
+                            control.click_input()
+                            action_message = "Left click"
+                        elif action == "right click":
+                            control.click_input(button='right')
+                            action_message = "Right click"
+                        elif action == "double left click":
+                            control.double_click_input()
+                            action_message = "Double click"
+                        elif action == "double right click":
+                            control.double_click_input(button='right')
+                            action_message = "Double click"
+                        elif action == "type" and keyboard_text:
+                            control.type_keys(keyboard_text)
+                            action_message = f"Typed '{keyboard_text}'"
+                        else:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "error",
+                                "message": f"Unsupported action: {action}"
+                            })
+                            continue
+                        
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "success",
+                            "message": f"Executed {action_message} on element"
+                        })
+                        
+                    except Exception as e:
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": f"Failed to execute action: {str(e)}"
+                        })
+                        continue
+
+                elif image_path:
+                    # Image-based click action
+                    if not action:
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": "No action specified for image click"
+                        })
+                        continue
+                    
+                    # Extract filename from path
+                    filename = os.path.basename(image_path)
+                    local_image_path = os.path.join(UPLOAD_FOLDER, filename)
+                    
+                    if not os.path.exists(local_image_path):
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": f"Image file not found: {filename}"
+                        })
+                        continue
+                    
+                    # Use CaptureClicks.py
+                    try:
+                        process = subprocess.Popen(
+                            ["python", "scripts/CaptureClicks.py", json.dumps([{
+                                "imagePath": local_image_path,
+                                "window": window_title,
+                                "action": action
+                            }])],
+                            stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE,
+                            text=True
+                        )
+                        stdout, stderr = process.communicate()
+                        if process.returncode != 0:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "error",
+                                "message": "Image click failed",
+                                "details": stderr
+                            })
+                        else:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "success",
+                                "message": f"Executed {action} on image"
+                            })
+                    except Exception as e:
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": f"Image click failed: {str(e)}"
+                        })
+
+                elif keyboard_text:
+                    # Keyboard action
+                    if not keyboard_text.strip():
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": "No keyboard input specified"
+                        })
+                        continue
+                    
+                    # Use CaptureClicks.py
+                    try:
+                        process = subprocess.Popen(
+                            ["python", "scripts/CaptureClicks.py", json.dumps([{
+                                "window": window_title,
+                                "keyboard": keyboard_text
+                            }])],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True
+                        )
+                        stdout, stderr = process.communicate()
+                        if process.returncode != 0:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "error",
+                                "message": "Keyboard action failed",
+                                "details": stderr
+                            })
+                        else:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "success",
+                                "message": "Keyboard action executed"
+                            })
+                    except Exception as e:
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": f"Keyboard action failed: {str(e)}"
+                        })
+
+                else:
+                    results.append({
+                        "id": item.get('id', 'unknown'),
+                        "status": "error",
+                        "message": "Invalid action item - no valid action type detected"
+                    })
+
+                # Small delay between actions
+                time.sleep(0.5)
+
+            except Exception as e:
+                results.append({
+                    "id": item.get('id', 'unknown'),
+                    "status": "error",
+                    "message": f"Unexpected error processing item: {str(e)}"
+                })
+
+        # Check if any actions failed
+        if any(result['status'] == 'error' for result in results):
+            return jsonify({
+                "status": "completed_with_errors",
+                "results": results
+            }), 207  # Multi-status
+        else:
+            return jsonify({
+                "status": "success",
+                "results": results
+            })
+
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON data"}), 400
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 @app.route('/capture_screenshot', methods=['GET', 'POST'])
 def capture_screenshot():

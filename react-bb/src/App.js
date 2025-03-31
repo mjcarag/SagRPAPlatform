@@ -16,6 +16,7 @@ const App = () => {
   const [selectedItem, setSelectedItem] = useState({});
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [screenshot, setScreenshot] = useState(null);
+  const [automationID, setautomationID] = useState("");
   const [action, setAction] = useState("");
   const [isDisabled, setIsDisabled] = useState(true);
   const [sideBarToggle, setSideBarToggle] = useState(true);
@@ -71,6 +72,9 @@ const App = () => {
         // setWindowTitles(data.titles)
         // if (data.status === "success") {
           setProperties(data);
+          setautomationID(data.automation_id);
+          console.log("AID:", data.automation_id);
+          handleUISelector(data.automation_id);
         // } else {
         //     alert('No control captured yet. Please try again.');
         // }
@@ -115,6 +119,22 @@ const App = () => {
   const handleKeyPress = (key) => {
     setInputValue((prev) => prev + (prev ? " + " : "") + key);
   };
+
+  const handleUISelector = (e) => {
+    const data = {
+      action: action,
+      automationID: e,
+      window: selectedWindow,
+    };
+
+    localStorage.setItem(selectedItem.content, JSON.stringify(data));
+
+    setItems((prevItems) =>
+      prevItems.map((itm) =>
+        itm.id === selectedItem.id ? { ...itm, action: ` >> ${inputValue}` } : itm
+      )
+    );
+  }
 
   const handleInputChange = (e) => {
       const data = {
@@ -311,6 +331,7 @@ const App = () => {
       let actionKey = "";
       let appwindow = "";
       let keyboard = "";
+      let automationID = "";
       if (value) {
         try {
           const parsed = JSON.parse(value);
@@ -318,6 +339,7 @@ const App = () => {
           actionKey = parsed.action || "";
           appwindow = parsed.window || "";
           keyboard = parsed.keyboard || "";
+          automationID = parsed.automationID || "";
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
@@ -331,6 +353,7 @@ const App = () => {
         imagePath: imagePath,
         window: appwindow,
         keyboard: keyboard,
+        automationID: automationID,
       };
     });
   
