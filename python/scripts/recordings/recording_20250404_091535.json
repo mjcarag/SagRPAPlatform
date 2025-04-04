@@ -1,0 +1,140 @@
+[
+  {
+    "action_type": "activate_window",
+    "window": "Windows PowerShell"
+  },
+  {
+    "action_type": "click",
+    "button": "left",
+    "element": {
+      "control_type": "Button",
+      "automation_id": "Appid: Microsoft.WindowsCalculator_8wekyb3d8bbwe!App",
+      "name": "Calculator - 1 running window",
+      "bounds": {
+        "left": 1306,
+        "top": 1140,
+        "right": 1361,
+        "bottom": 1200,
+        "width": 55,
+        "height": 60
+      }
+    },
+    "window": "Windows PowerShell"
+  },
+  {
+    "action_type": "activate_window",
+    "window": "Calculator"
+  },
+  {
+    "action_type": "click",
+    "button": "left",
+    "element": {
+      "control_type": "Button",
+      "automation_id": "clearButton",
+      "name": "Clear",
+      "bounds": {
+        "left": 1145,
+        "top": 544,
+        "right": 1241,
+        "bottom": 607,
+        "width": 96,
+        "height": 63
+      }
+    },
+    "window": "Calculator"
+  },
+  {
+    "action_type": "click",
+    "button": "left",
+    "element": {
+      "control_type": "Button",
+      "automation_id": "num1Button",
+      "name": "One",
+      "bounds": {
+        "left": 949,
+        "top": 808,
+        "right": 1045,
+        "bottom": 872,
+        "width": 96,
+        "height": 64
+      }
+    },
+    "window": "Calculator"
+  },
+  {
+    "action_type": "click",
+    "button": "left",
+    "element": {
+      "control_type": "Button",
+      "automation_id": "plusButton",
+      "name": "Plus",
+      "bounds": {
+        "left": 1243,
+        "top": 808,
+        "right": 1339,
+        "bottom": 871,
+        "width": 96,
+        "height": 63
+      }
+    },
+    "window": "Calculator"
+  },
+  {
+    "action_type": "click",
+    "button": "left",
+    "element": {
+      "control_type": "Button",
+      "automation_id": "num1Button",
+      "name": "One",
+      "bounds": {
+        "left": 949,
+        "top": 808,
+        "right": 1045,
+        "bottom": 872,
+        "width": 96,
+        "height": 64
+      }
+    },
+    "window": "Calculator"
+  },
+  {
+    "action_type": "click",
+    "button": "left",
+    "element": {
+      "control_type": "Button",
+      "automation_id": "equalButton",
+      "name": "Equals",
+      "bounds": {
+        "left": 1243,
+        "top": 874,
+        "right": 1339,
+        "bottom": 938,
+        "width": 96,
+        "height": 64
+      }
+    },
+    "window": "Calculator"
+  },
+  {
+    "action_type": "click",
+    "button": "left",
+    "element": {
+      "control_type": "Pane",
+      "automation_id": "",
+      "name": "",
+      "bounds": {
+        "left": 656,
+        "top": 377,
+        "right": 1740,
+        "bottom": 427,
+        "width": 1084,
+        "height": 50
+      }
+    },
+    "window": "Calculator"
+  },
+  {
+    "action_type": "activate_window",
+    "window": "Windows PowerShell"
+  }
+]

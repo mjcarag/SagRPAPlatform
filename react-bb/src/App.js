@@ -30,6 +30,8 @@ const App = () => {
   const [windowTitles, setWindowTitles] = useState([]);
   const [selectedWindow, setSelectedWindow] = useState("");
   const serverIP = "http://localhost:5000/";
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedActions, setRecordedActions] = useState([]);
 
   // Testing
   const [properties, setProperties] = useState(null);
@@ -450,12 +452,67 @@ const App = () => {
       </Popover.Body>
     </Popover>
   );
+  
+  const startRecording = () => {
+    fetch(serverIP + "start-recording", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          setIsRecording(true);
+        }
+      })
+      .catch((err) => console.error("Error starting recording:", err));
+  };
+  
+  const stopRecording = () => {
+    fetch(serverIP + "stop-recording", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          setIsRecording(false);
+          // Convert recording to items format
+          const newItems = data.recording.map((action, index) => {
+            let content = "";
+            let actionType = "";
+            
+            if (action.action_type === "click") {
+              content = `Click on ${action.element?.name || "element"}`;
+              actionType = "UIElement";
+            } else if (action.action_type === "keystroke") {
+              content = `Keystroke: ${action.key}`;
+              actionType = "keyStroke";
+            } else if (action.action_type === "activate_window") {
+              content = `Activate window: ${action.window}`;
+              actionType = "window";
+            }
+            
+            return {
+              id: `rec-${index}-${Date.now()}`,
+              content,
+              actionType,
+              action: action.action_type,
+              window: action.window,
+              ...(action.element && { automationID: action.element.automation_id })
+            };
+          });
+          
+          setItems([...items, ...newItems]);
+        }
+      })
+      .catch((err) => console.error("Error stopping recording:", err));
+  };
 
   return (
     <div className="App">
       <Navbar fixed="top" className="bg-topNav" >
         <Container fluid>
-          <Navbar.Brand href="#home" className="topNav-text"> RPA Automation</Navbar.Brand>
+          <Navbar.Brand href="#home" className="topNav-text"> AI Copilot</Navbar.Brand>
          
           <Navbar.Toggle />
           {/* <Navbar.Collapse className="justify-content-end">
@@ -554,7 +611,13 @@ const App = () => {
             </Droppable>
           </DragDropContext>
         </Container>
-        
+        <Button 
+          variant={isRecording ? "danger" : "primary"} 
+          onClick={isRecording ? stopRecording : startRecording}
+          className="top-buttons me-2"
+        >
+          {isRecording ? "⏹ Stop Recording" : "⏺ Start Recording"}
+        </Button>
       
       </main>      
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
