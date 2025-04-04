@@ -8,9 +8,14 @@ import json
 import pygetwindow as gw
 import pyautogui
 from scripts.ElementSelector import ElementSelector
+from scripts.Recording import ActionRecorder
+import threading
 from pymongo import MongoClient
 import uuid
 from pywinauto import Desktop, Application
+
+recorder = None
+recording_thread = None
 
 app = Flask(__name__)
 CORS(app)
@@ -441,5 +446,50 @@ def save_Project():
         return jsonify({"message": "Data saved successfully!", "id": data['_id']}), 201
     return jsonify({"message": "Invalid data!"}), 400
 
+@app.route('/start-recording', methods=['POST'])
+def start_recording():
+    global recorder, recording_thread
+    
+    if recorder is not None:
+        return jsonify({"status": "error", "message": "Recording already in progress"}), 400
+    
+    recorder = ActionRecorder()
+    
+    def recording_task():
+        global recorder
+        recorder.start_recording()
+    
+    recording_thread = threading.Thread(target=recording_task)
+    recording_thread.start()
+    
+    return jsonify({"status": "success", "message": "Recording started"})
+
+@app.route('/stop-recording', methods=['POST'])
+def stop_recording():
+    global recorder, recording_thread
+    
+    if recorder is None:
+        return jsonify({"status": "error", "message": "No active recording"}), 400
+
+    keyboard.press_and_release('esc')
+    recording_thread.join()
+    recording = recorder.actions
+    filename = recorder.save_recording()
+    
+    recorder = None
+    recording_thread = None
+    
+    return jsonify({
+        "status": "success",
+        "message": "Recording stopped",
+        "recording": recording,
+        "filename": filename
+    })
+
+@app.route('/get-recordings', methods=['GET'])
+def get_recordings():
+    import glob
+    recordings = glob.glob("recordings/*.json")
+    return jsonify({"recordings": recordings})
 
 app.run(host="0.0.0.0", port=5000,  debug=True)

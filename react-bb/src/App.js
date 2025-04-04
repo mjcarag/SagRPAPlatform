@@ -455,7 +455,7 @@ const App = () => {
     <div className="App">
       <Navbar fixed="top" className="bg-topNav" >
         <Container fluid>
-          <Navbar.Brand href="#home" className="topNav-text"> Bautomation Banywhere</Navbar.Brand>
+          <Navbar.Brand href="#home" className="topNav-text"> RPA Automation</Navbar.Brand>
          
           <Navbar.Toggle />
           {/* <Navbar.Collapse className="justify-content-end">
