@@ -1,10 +1,8 @@
+import pygetwindow as gw
 import time
-import pyautogui
-import keyboard
+import threading
+from pynput import mouse, keyboard as pynput_keyboard
 import json
-from pynput import mouse, keyboard as kb
-from pywinauto import Desktop
-import psutil
 import os
 from datetime import datetime
 from typing import List, Dict, Any
@@ -15,10 +13,20 @@ class ActionRecorder:
         self.current_window = None
         self.last_window = None
         self.last_action_time = time.time()
-        self.min_interval = 0.1  # Minimum time between actions
+        self.min_interval = 0.1
         self.output_dir = "recordings"
         os.makedirs(self.output_dir, exist_ok=True)
-        
+        self.stop_event = threading.Event()
+        self.is_recording = False
+
+    def _get_active_window_title(self):
+        """Safe method to get active window title"""
+        try:
+            active_window = gw.getActiveWindow()
+            return active_window.title if active_window else "Unknown"
+        except Exception:
+            return "Unknown"
+
     def _get_element_properties(self, x: int, y: int) -> Dict[str, Any]:
         """Get UI element properties at given coordinates"""
         try:
@@ -52,7 +60,7 @@ class ActionRecorder:
                 "position": {"x": x, "y": y},
                 "timestamp": time.time(),
                 "element": element_props,
-                "window": pyautogui.getActiveWindowTitle()
+                "window": self._get_active_window_title()
             }
             
             self.actions.append(action)
@@ -61,13 +69,11 @@ class ActionRecorder:
     def on_press(self, key):
         """Handle keyboard press events"""
         try:
-            # Skip if it's a modifier key or too soon after last action
             if (time.time() - self.last_action_time) < self.min_interval:
                 return
                 
             key_str = key.char if hasattr(key, 'char') else str(key)
             
-            # Skip modifier keys
             if key_str in ['Key.shift', 'Key.ctrl', 'Key.alt']:
                 return
                 
@@ -75,7 +81,7 @@ class ActionRecorder:
                 "type": "keypress",
                 "key": key_str,
                 "timestamp": time.time(),
-                "window": pyautogui.getActiveWindowTitle()
+                "window": self._get_active_window_title()
             }
             
             self.actions.append(action)
@@ -86,8 +92,8 @@ class ActionRecorder:
 
     def track_window_changes(self):
         """Track active window changes"""
-        while True:
-            current_window = pyautogui.getActiveWindowTitle()
+        while self.is_recording and not self.stop_event.is_set():
+            current_window = self._get_active_window_title()
             if current_window and current_window != self.last_window:
                 action = {
                     "type": "window_change",
@@ -99,12 +105,15 @@ class ActionRecorder:
             time.sleep(0.5)
 
     def _simplify_actions(self) -> List[Dict[str, Any]]:
-        """Convert raw actions to simplified commands"""
+        """Convert raw actions to simplified commands with IDs"""
         simplified = []
         
-        for action in self.actions:
+        for index, action in enumerate(self.actions):
+            action_id = f"rec-{index}-{int(time.time())}"
+            
             if action['type'] == 'click':
                 simplified.append({
+                    "id": action_id,
                     "action_type": "click",
                     "button": action['button'].replace('Button.', '').lower(),
                     "element": action.get('element'),
@@ -113,6 +122,7 @@ class ActionRecorder:
                 
             elif action['type'] == 'keypress':
                 simplified.append({
+                    "id": action_id,
                     "action_type": "keystroke",
                     "key": action['key'],
                     "window": action['window']
@@ -120,6 +130,7 @@ class ActionRecorder:
                 
             elif action['type'] == 'window_change':
                 simplified.append({
+                    "id": action_id,
                     "action_type": "activate_window",
                     "window": action['window']
                 })
@@ -140,33 +151,39 @@ class ActionRecorder:
             
         return filepath
 
-    def start_recording(self) -> List[Dict[str, Any]]:
+    def start_recording(self, stop_event: threading.Event):
         """Start recording session"""
+        self.stop_event = stop_event
+        self.is_recording = True
         self.actions = []
         
-
+        # Start listeners
         mouse_listener = mouse.Listener(on_click=self.on_click)
         mouse_listener.start()
-        kb_listener = kb.Listener(on_press=self.on_press)
+        
+        kb_listener = pynput_keyboard.Listener(on_press=self.on_press)
         kb_listener.start()
 
-        import threading
+        # Start window tracker
         window_thread = threading.Thread(
             target=self.track_window_changes, 
             daemon=True
         )
         window_thread.start()
 
-        print("Recording started. Press 'Esc' to stop.")
-        keyboard.wait('esc')
+        print("Recording started. Waiting for stop signal...")
         
+        while self.is_recording and not self.stop_event.is_set():
+            time.sleep(0.1)
+        
+        # Clean up
         mouse_listener.stop()
         kb_listener.stop()
+        window_thread.join(timeout=1)
         
+        print("Recording stopped")
         return self._simplify_actions()
 
-if __name__ == "__main__":
-    recorder = ActionRecorder()
-    recording = recorder.start_recording()
-    saved_path = recorder.save_recording()
-    print(f"Recording saved to: {saved_path}")
+    def stop_recording(self):
+        """Signal to stop recording"""
+        self.is_recording = False

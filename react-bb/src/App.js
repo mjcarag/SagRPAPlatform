@@ -33,6 +33,7 @@ const App = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedActions, setRecordedActions] = useState([]);
 
+
   // Testing
   const [properties, setProperties] = useState(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -453,59 +454,115 @@ const App = () => {
     </Popover>
   );
   
-  const startRecording = () => {
-    fetch(serverIP + "start-recording", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setIsRecording(true);
-        }
-      })
-      .catch((err) => console.error("Error starting recording:", err));
+  const startRecording = async () => {
+    try {
+      const response = await fetch(serverIP + "start-recording", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      if (data.status === "success") {
+        setIsRecording(true);
+      }
+    } catch (err) {
+      console.error("Error starting recording:", err);
+      alert("Failed to start recording");
+    }
   };
   
-  const stopRecording = () => {
-    fetch(serverIP + "stop-recording", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setIsRecording(false);
-          // Convert recording to items format
-          const newItems = data.recording.map((action, index) => {
-            let content = "";
-            let actionType = "";
-            
-            if (action.action_type === "click") {
-              content = `Click on ${action.element?.name || "element"}`;
-              actionType = "UIElement";
-            } else if (action.action_type === "keystroke") {
-              content = `Keystroke: ${action.key}`;
-              actionType = "keyStroke";
-            } else if (action.action_type === "activate_window") {
-              content = `Activate window: ${action.window}`;
-              actionType = "window";
-            }
-            
-            return {
-              id: `rec-${index}-${Date.now()}`,
-              content,
-              actionType,
-              action: action.action_type,
-              window: action.window,
-              ...(action.element && { automationID: action.element.automation_id })
-            };
-          });
+  const stopRecording = async () => {
+    try {
+      const response = await fetch(serverIP + "stop-recording", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      setIsRecording(false);
+      
+      if (data.status === "success" && data.recording) {
+        const newItems = data.recording.map((action) => {
+          let content = "";
+          let actionType = "";
           
-          setItems([...items, ...newItems]);
+          if (action.action_type === "click") {
+            content = `Click on ${action.element?.name || "element"}`;
+            actionType = "UIElement";
+          } else if (action.action_type === "keystroke") {
+            content = `Keystroke: ${action.key}`;
+            actionType = "keyStroke";
+          } else if (action.action_type === "activate_window") {
+            content = `Activate window: ${action.window}`;
+            actionType = "window";
+          }
+          
+          return {
+            id: action.id || `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            content,
+            actionType,
+            action: action.action_type,
+            window: action.window,
+            ...(action.element && { automationID: action.element.automation_id })
+          };
+        });
+        
+        setItems([...items, ...newItems]);
+      }
+    } catch (err) {
+      console.error("Error stopping recording:", err);
+      alert("Failed to stop recording");
+    }
+  };
+
+  const toggleRecording = async () => {
+    try {
+      if (isRecording) {
+        const response = await fetch(serverIP + "stop-recording", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json();
+        
+        if (data.status === "success") {
+          const newItems = data.recording.map((action) => ({
+            id: action.id,
+            content: getActionContent(action),
+            actionType: getActionType(action),
+            action: action.action_type,
+            window: action.window,
+            ...(action.element && { automationID: action.element.automation_id })
+          }));
+          setItems(prev => [...prev, ...newItems]);
         }
-      })
-      .catch((err) => console.error("Error stopping recording:", err));
+      } else {
+        await fetch(serverIP + "start-recording", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      setIsRecording(!isRecording);
+    } catch (err) {
+      console.error("Recording error:", err);
+      alert(`Failed to ${isRecording ? 'stop' : 'start'} recording`);
+    }
+  };
+  
+  // Helper functions
+  const getActionContent = (action) => {
+    switch(action.action_type) {
+      case 'click': return `Click on ${action.element?.name || "element"}`;
+      case 'keystroke': return `Keystroke: ${action.key}`;
+      case 'activate_window': return `Activate window: ${action.window}`;
+      default: return "Unknown action";
+    }
+  };
+  
+  const getActionType = (action) => {
+    switch(action.action_type) {
+      case 'click': return "UIElement";
+      case 'keystroke': return "keyStroke";
+      case 'activate_window': return "window";
+      default: return "unknown";
+    }
   };
 
   return (
@@ -581,7 +638,7 @@ const App = () => {
                       
                   {items.map((item, index) => (
                     <React.Fragment key={item.id}>
-                      <Draggable draggableId={item.id} index={index}>
+                      <Draggable key={item.id} draggableId={item.id} index={index}>
                         {(provided) => (
                           <div
                             ref={provided.innerRef}
@@ -612,9 +669,8 @@ const App = () => {
           </DragDropContext>
         </Container>
         <Button 
-          variant={isRecording ? "danger" : "primary"} 
-          onClick={isRecording ? stopRecording : startRecording}
-          className="top-buttons me-2"
+          variant={isRecording ? "danger" : "primary"}
+          onClick={toggleRecording}
         >
           {isRecording ? "⏹ Stop Recording" : "⏺ Start Recording"}
         </Button>

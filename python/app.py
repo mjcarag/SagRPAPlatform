@@ -13,9 +13,13 @@ import threading
 from pymongo import MongoClient
 import uuid
 from pywinauto import Desktop, Application
-from pynput import keyboard,mouse
+from pynput import keyboard as pynput_keyboard,mouse
+import keyboard as keyboard_module
+
 recorder = None
 recording_thread = None
+stop_event = threading.Event()
+
 
 app = Flask(__name__)
 CORS(app)
@@ -448,16 +452,17 @@ def save_Project():
 
 @app.route('/start-recording', methods=['POST'])
 def start_recording():
-    global recorder, recording_thread
+    global recorder, recording_thread, stop_event
     
     if recorder is not None:
         return jsonify({"status": "error", "message": "Recording already in progress"}), 400
     
+    stop_event = threading.Event()
     recorder = ActionRecorder()
     
     def recording_task():
         global recorder
-        recorder.start_recording()
+        recorder.start_recording(stop_event)
     
     recording_thread = threading.Thread(target=recording_task)
     recording_thread.start()
@@ -466,24 +471,29 @@ def start_recording():
 
 @app.route('/stop-recording', methods=['POST'])
 def stop_recording():
-    global recorder, recording_thread
+    global recorder, recording_thread, stop_event
     
     if recorder is None:
         return jsonify({"status": "error", "message": "No active recording"}), 400
-
-    keyboard.press_and_release('esc')
-    recording_thread.join()
-    recording = recorder.actions
-    filename = recorder.save_recording()
-    
+    stop_event.set()
+    if hasattr(recorder, 'stop_recording'):
+        recorder.stop_recording()
+    recording_thread.join(timeout=2)
+    recording = []
+    filename = None
+    if hasattr(recorder, '_simplify_actions'):
+        recording = recorder._simplify_actions()
+    if hasattr(recorder, 'save_recording'):
+        filename = recorder.save_recording()
     recorder = None
     recording_thread = None
+    stop_event = None
     
     return jsonify({
         "status": "success",
         "message": "Recording stopped",
         "recording": recording,
-        "filename": filename
+        "filename": filename if filename else None
     })
 
 @app.route('/get-recordings', methods=['GET'])
