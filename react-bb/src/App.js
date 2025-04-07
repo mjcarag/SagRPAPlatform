@@ -4,9 +4,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 import { FaArrowDown, FaPlay, FaList, FaCog, FaSignOutAlt  } from "react-icons/fa";
-import { BsRecordCircle, BsKeyboard } from "react-icons/bs";
+import { BsRecordCircle, BsKeyboard,  } from "react-icons/bs";
 import { CiEdit, CiCamera, CiGrid42  } from "react-icons/ci";
-import { FaFloppyDisk } from "react-icons/fa6";
+import { FaFloppyDisk, FaRegCircleStop } from "react-icons/fa6";
 
 import "./App.css";
 import "./keyboard.css";
@@ -31,7 +31,7 @@ const App = () => {
   const [selectedWindow, setSelectedWindow] = useState("");
   const serverIP = "http://localhost:5000/";
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedActions, setRecordedActions] = useState([]);
+
 
 
   // Testing
@@ -246,7 +246,12 @@ const App = () => {
     reorderedItems.splice(result.destination.index, 0, movedItem);
     setItems(reorderedItems);
   };
-
+  const showPropertiesRecorder = (item) => {
+    setSelectedItem(prev => ({ ...prev, content: item }));
+    setSelectedAction(item);
+    setShowOffcanvas(true);
+    
+  }
   const showProperties = (item) => {
     setSelectedItem(item);
     setShowOffcanvas(true);
@@ -335,6 +340,7 @@ const App = () => {
       let appwindow = "";
       let keyboard = "";
       let automationID = "";
+      
       if (value) {
         try {
           const parsed = JSON.parse(value);
@@ -454,64 +460,6 @@ const App = () => {
     </Popover>
   );
   
-  const startRecording = async () => {
-    try {
-      const response = await fetch(serverIP + "start-recording", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await response.json();
-      if (data.status === "success") {
-        setIsRecording(true);
-      }
-    } catch (err) {
-      console.error("Error starting recording:", err);
-      alert("Failed to start recording");
-    }
-  };
-  
-  const stopRecording = async () => {
-    try {
-      const response = await fetch(serverIP + "stop-recording", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await response.json();
-      setIsRecording(false);
-      
-      if (data.status === "success" && data.recording) {
-        const newItems = data.recording.map((action) => {
-          let content = "";
-          let actionType = "";
-          
-          if (action.action_type === "click") {
-            content = `Click on ${action.element?.name || "element"}`;
-            actionType = "UIElement";
-          } else if (action.action_type === "keystroke") {
-            content = `Keystroke: ${action.key}`;
-            actionType = "keyStroke";
-          } else if (action.action_type === "activate_window") {
-            content = `Activate window: ${action.window}`;
-            actionType = "window";
-          }
-          
-          return {
-            id: action.id || `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            content,
-            actionType,
-            action: action.action_type,
-            window: action.window,
-            ...(action.element && { automationID: action.element.automation_id })
-          };
-        });
-        
-        setItems([...items, ...newItems]);
-      }
-    } catch (err) {
-      console.error("Error stopping recording:", err);
-      alert("Failed to stop recording");
-    }
-  };
 
   const toggleRecording = async () => {
     try {
@@ -539,6 +487,7 @@ const App = () => {
           headers: { "Content-Type": "application/json" },
         });
       }
+
       setIsRecording(!isRecording);
     } catch (err) {
       console.error("Recording error:", err);
@@ -590,6 +539,7 @@ const App = () => {
           <li  onClick={addItem}><CiCamera  /> Capture</li>
           <li  onClick={addItemKeyStroke}><BsKeyboard  /> Key Stroke</li>
           <li  onClick={addItemUI}><CiGrid42   /> UI Element</li>
+          <li  onClick={() => showPropertiesRecorder("Recorder")}><BsRecordCircle /> Recorder</li>
           <li><FaList /> Actions</li>
           <li><FaCog /> Settings</li>
           <li className="logout"><FaSignOutAlt /> Logout</li>
@@ -668,12 +618,7 @@ const App = () => {
             </Droppable>
           </DragDropContext>
         </Container>
-        <Button 
-          variant={isRecording ? "danger" : "primary"}
-          onClick={toggleRecording}
-        >
-          {isRecording ? "⏹ Stop Recording" : "⏺ Start Recording"}
-        </Button>
+        
       
       </main>      
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
@@ -823,6 +768,24 @@ const App = () => {
                   </Col>
                 </Row>
               </>
+             )}
+             {selectedAction === "Recorder" && (
+              <Row> 
+                <Col>
+                <Button 
+                  variant={isRecording ? "danger" : "primary"}
+                  onClick={toggleRecording}
+                >
+                  {isRecording ? (
+                    <> <FaRegCircleStop /> Stop Recording </>
+                  ) : (
+                    <>
+                      <BsRecordCircle /> Start Recording
+                    </>
+                  )}
+                </Button>
+                </Col>
+              </Row>
              )}
         </Offcanvas.Body>
       </Offcanvas>
