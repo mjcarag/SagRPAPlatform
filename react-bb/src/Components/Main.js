@@ -8,8 +8,8 @@ import { BsRecordCircle, BsKeyboard,  } from "react-icons/bs";
 import { CiEdit, CiCamera, CiGrid42  } from "react-icons/ci";
 import { FaFloppyDisk, FaRegCircleStop } from "react-icons/fa6";
 
-import "./App.css";
-import "./keyboard.css";
+import "../App.css";
+import "./css/keyboard.css";
 
 const Main = () => {
   const [items, setItems] = useState(JSON.parse(localStorage.getItem("items")) || []);
