@@ -25,6 +25,9 @@ app = Flask(__name__)
 CORS(app)
 element_selector = ElementSelector()
 
+USERS = {
+    "admin": "ngao"
+}
 
 client = MongoClient("mongodb+srv://carjlight:fx8njvXcaY9L29nS@bbcluster.fd7s6.mongodb.net/?retryWrites=true&w=majority&appName=BBCluster")
 db = client["BB_DB"]
@@ -501,5 +504,16 @@ def get_recordings():
     import glob
     recordings = glob.glob("recordings/*.json")
     return jsonify({"recordings": recordings})
+    
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
 
+    if USERS.get(username) == password:
+        return jsonify({"success": True, "user": username})
+    else:
+        return jsonify({"success": False, "message": "Invalid username or password"}), 401
+    
 app.run(host="0.0.0.0", port=5000,  debug=True)

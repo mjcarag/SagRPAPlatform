@@ -23,6 +23,8 @@ Ensure you have Node.js and npm or yarn installed.
    npm install @hello-pangea/dnd
    npm install react-icons
    yarn add react-bootstrap bootstrap
+   npm install @craco/craco
+   npm install stream-http
   
 3. Install requirements.txt
    ```sh
