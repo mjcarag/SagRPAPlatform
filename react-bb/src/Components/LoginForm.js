@@ -8,7 +8,7 @@ const LoginForm = ({onLogin}) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-
+    const serverIP = "http://localhost:5000/";
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
@@ -24,13 +24,13 @@ const LoginForm = ({onLogin}) => {
     };
     
     const addUser = () => {
-
+        const newItem = { content: `UIElement`, actionType: "UIElement"  };
         fetch(serverIP + "api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newItem),
         })
           .then((res) => res.json())
-          .then((data) => setItems([...items, data]))
           .catch((err) => console.error("Error adding item:", err));
     
       };
