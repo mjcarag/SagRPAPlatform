@@ -32,7 +32,7 @@ USERS = {
 client = MongoClient("mongodb+srv://carjlight:fx8njvXcaY9L29nS@bbcluster.fd7s6.mongodb.net/?retryWrites=true&w=majority&appName=BBCluster")
 db = client["BB_DB"]
 collection = db["BB_Data"]
-
+users_collection = db['users']
 
 UPLOAD_FOLDER = "static/screenshots"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -510,10 +510,45 @@ def login():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
-
-    if USERS.get(username) == password:
+    
+    user = users_collection.find_one({"username": username})
+    
+    if user and user.get("password") == password:
         return jsonify({"success": True, "user": username})
     else:
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
-    
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+
+    # # Extract fields
+    # first_name = data.get("first_name")
+    # last_name = data.get("last_name")
+    # username = data.get("username")
+    # password = data.get("password")
+    # role = data.get("role")
+    # group = data.get("group")
+
+    # Check if username already exists
+    # if users_collection.find_one({"username": username}):
+    #     return jsonify({"success": False, "message": "Username already exists"}), 409
+
+    # Hash the password
+    # hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    # Create user document
+    user_doc = {
+        "first_name": "Carj Gilson",
+        "last_name": "Concepcion",
+        "username": "admin_dev",
+        "password": "ngao",
+        "role": "Developer",
+        "group": "Facets"
+    }
+    # Insert into MongoDB
+    users_collection.insert_one(user_doc)
+
+    return jsonify({"success": True, "message": "User registered successfully"})
+ 
 app.run(host="0.0.0.0", port=5000,  debug=True)

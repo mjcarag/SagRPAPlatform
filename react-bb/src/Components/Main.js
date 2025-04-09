@@ -330,8 +330,18 @@ const Main = () => {
 
   };
 
+  const addUser = () => {
 
-  const runMain = () => {
+    fetch(serverIP + "api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((data) => setItems([...items, data]))
+      .catch((err) => console.error("Error adding item:", err));
+
+  };
+  const runMain = () => {s
 
     const orderedItems = items.map((item, index) => {
       const value = localStorage.getItem(item.content);
@@ -540,7 +550,7 @@ const Main = () => {
           <li  onClick={addItemKeyStroke}><BsKeyboard  /> Key Stroke</li>
           <li  onClick={addItemUI}><CiGrid42   /> UI Element</li>
           <li  onClick={() => showPropertiesRecorder("Recorder")}><BsRecordCircle /> Recorder</li>
-          <li><FaList /> Actions</li>
+          <li onClick={addUser}><FaList /> Actions</li>
           <li><FaCog /> Settings</li>
           <li className="logout"><FaSignOutAlt /> Logout</li>
         </ul>
