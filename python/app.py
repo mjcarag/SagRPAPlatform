@@ -541,9 +541,9 @@ def register():
     user_doc = {
         "first_name": "Carj Gilson",
         "last_name": "Concepcion",
-        "username": "admin_dev",
+        "username": "admin_run",
         "password": "ngao",
-        "role": "Developer",
+        "role": "Runner",
         "group": "Facets"
     }
     # Insert into MongoDB
