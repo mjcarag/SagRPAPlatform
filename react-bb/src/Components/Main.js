@@ -341,7 +341,7 @@ const Main = () => {
       .catch((err) => console.error("Error adding item:", err));
 
   };
-  const runMain = () => {s
+  const runMain = () => {
 
     const orderedItems = items.map((item, index) => {
       const value = localStorage.getItem(item.content);
