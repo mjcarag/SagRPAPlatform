@@ -23,7 +23,17 @@ const LoginForm = ({onLogin}) => {
         }
     };
     
+    const addUser = () => {
 
+        fetch(serverIP + "api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        })
+          .then((res) => res.json())
+          .then((data) => setItems([...items, data]))
+          .catch((err) => console.error("Error adding item:", err));
+    
+      };
   return (
     <div className="login-form">
         <div className="wrapper">
@@ -45,7 +55,7 @@ const LoginForm = ({onLogin}) => {
                 <div className="input-box">
                     <button type="submit">Login</button>
                 </div>
-            </form>
+            </form><li onClick={addUser}> ngao </li>
         </div>
     </div>
   );
