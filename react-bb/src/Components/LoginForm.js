@@ -55,7 +55,8 @@ const LoginForm = ({onLogin}) => {
                 <div className="input-box">
                     <button type="submit">Login</button>
                 </div>
-            </form><li onClick={addUser}> ngao </li>
+            </form>
+            {/* <li onClick={addUser}> ngao </li> */}
         </div>
     </div>
   );

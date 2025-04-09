@@ -330,17 +330,7 @@ const Main = () => {
 
   };
 
-  const addUser = () => {
 
-    fetch(serverIP + "api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((data) => setItems([...items, data]))
-      .catch((err) => console.error("Error adding item:", err));
-
-  };
   const runMain = () => {
 
     const orderedItems = items.map((item, index) => {

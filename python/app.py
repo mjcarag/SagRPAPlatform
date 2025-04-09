@@ -514,7 +514,11 @@ def login():
     user = users_collection.find_one({"username": username})
     
     if user and user.get("password") == password:
-        return jsonify({"success": True, "user": username})
+        return jsonify({"success": True, 
+            "user": {
+            "username": user["username"],
+            "role": user["role"]
+        }})
     else:
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
 
