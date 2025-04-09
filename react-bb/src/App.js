@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Components/LoginForm';
 import Dashboard from './Components/Main'; // your main page after login
-
+import LandingDev from './Components/Landing_dev';
+import LandingRunner from './Components/Landing_runner';
+import RoleBasedRedirect from './Components/RoleBasedRedirect';
 function App() {
   const [user, setUser] = useState(null);
 

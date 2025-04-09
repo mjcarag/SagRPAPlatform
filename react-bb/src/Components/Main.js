@@ -540,7 +540,7 @@ const Main = () => {
           <li  onClick={addItemKeyStroke}><BsKeyboard  /> Key Stroke</li>
           <li  onClick={addItemUI}><CiGrid42   /> UI Element</li>
           <li  onClick={() => showPropertiesRecorder("Recorder")}><BsRecordCircle /> Recorder</li>
-          <li onClick={addUser}><FaList /> Actions</li>
+          <li><FaList /> Actions</li>
           <li><FaCog /> Settings</li>
           <li className="logout"><FaSignOutAlt /> Logout</li>
         </ul>
