@@ -32,7 +32,7 @@ USERS = {
 client = MongoClient("mongodb+srv://carjlight:fx8njvXcaY9L29nS@bbcluster.fd7s6.mongodb.net/?retryWrites=true&w=majority&appName=BBCluster")
 db = client["BB_DB"]
 collection = db["BB_Data"]
-users_collection = db['users']
+users_collection = db['BB_Users']
 
 UPLOAD_FOLDER = "static/screenshots"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
