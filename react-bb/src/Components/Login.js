@@ -12,11 +12,11 @@ const Login = ({ onLogin }) => {
     try {
       const res = await axios.post('http://localhost:5000/login', { username, password });
       if (res.data.success) {
-        onLogin(res.data.user); // optional user data
+        onLogin(res.data.user); // optional user data ngao
       } else {
         setError(res.data.message);
       }
-    } catch (err) {
+    } catch (err) { 
       setError('Login failed. Please try again.');
     }
   };
