@@ -158,6 +158,8 @@ def simulate_keystrokes(keys):
         if len(key) == 1 or key.isalpha() or key.isspace():
             print(f"Typing: {key}")
             pyautogui.write(key)
+        elif len(key) > 1:
+            pyautogui.write(mapped_key)
         elif mapped_key:
             print(f"Pressing: {mapped_key}")
             pyautogui.press(mapped_key)
@@ -167,18 +169,24 @@ def main(jsondata):
     # with open(r'D:\Office Works\VSC\RPAUI\GithubBB\python\static\Testing\test.json') as json_file:
         # jsondata = json.load(json_file)
         print(jsondata)
+        
         for item in jsondata:
-            print(item['imagePath'])
-            if item['action'] != '':
+            # print(item['imagePath'])
+            image_path = item.get('imagePath')
+            action = item.get('action')
+            keyboard = item.get('keyboard')
+            window = item.get('window')
+
+            if keyboard:
+                # activate_window(item['window'])
+                # print(item['keyboard'])
+                simulate_keystrokes(item['keyboard'])
+            if action:
                 Capture_Click(
                     item['imagePath'],
                     item['window'],
                     item['action']
                 )
-            elif item['keyboard'] != '':
-                activate_window(item['window'])
-                print(item['keyboard'])
-                simulate_keystrokes(item['keyboard'])
             time.sleep(2)
 
 if __name__ == "__main__":

@@ -175,16 +175,18 @@ def Controls():
 
                 # Activate the target window first
                 try:
-                    app_window = gw.getWindowsWithTitle(window_title)
-                    if not app_window:
-                        results.append({
-                            "id": item.get('id', 'unknown'),
-                            "status": "error",
-                            "message": f"Window '{window_title}' not found"
-                        })
-                        continue
-                    
-                    app_window[0].activate()
+                    if not keyboard_text:
+                        app_window = gw.getWindowsWithTitle(window_title)
+                        if not app_window:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "error",
+                                "message": f"Window '{window_title}' not found"
+                            })
+                            continue
+                        
+                        app_window[0].activate()
+
                     time.sleep(0.5)  # Small delay for window activation
                 except Exception as e:
                     results.append({
