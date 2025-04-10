@@ -15,6 +15,7 @@ import uuid
 from pywinauto import Desktop, Application
 from pynput import keyboard as pynput_keyboard,mouse
 import keyboard as keyboard_module
+from bson.objectid import ObjectId
 
 recorder = None
 recording_thread = None
@@ -555,4 +556,19 @@ def register():
 
     return jsonify({"success": True, "message": "User registered successfully"})
  
+@app.route('/api/load', methods=['POST'])
+def load_data():
+    data = request.get_json()
+    item_id = data.get("id")
+
+    try:
+        result = collection.find_one({"_id": item_id})
+        if result:
+            result['_id'] = str(result['_id'])  # convert ObjectId to string
+            return jsonify(result), 200
+        else:
+            return jsonify({"error": "Item not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    
 app.run(host="0.0.0.0", port=5000,  debug=True)

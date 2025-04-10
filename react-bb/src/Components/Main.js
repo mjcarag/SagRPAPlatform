@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Nav, Navbar, Offcanvas, Form, Image, Row, Col, Popover, OverlayTrigger, InputGroup } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import axios from 'axios';
 
-import { FaArrowDown, FaPlay, FaList, FaCog, FaSignOutAlt  } from "react-icons/fa";
+import { FaArrowDown, FaPlay, FaList, FaCog, FaSignOutAlt, FaDownload   } from "react-icons/fa";
 import { BsRecordCircle, BsKeyboard,  } from "react-icons/bs";
 import { CiEdit, CiCamera, CiGrid42  } from "react-icons/ci";
 import { FaFloppyDisk, FaRegCircleStop } from "react-icons/fa6";
@@ -31,7 +32,8 @@ const Main = () => {
   const [selectedWindow, setSelectedWindow] = useState("");
   const serverIP = "http://localhost:5000/";
   const [isRecording, setIsRecording] = useState(false);
-
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
 
 
   // Testing
@@ -387,6 +389,7 @@ const Main = () => {
       let actionKey = "";
       let appwindow = "";
       let keyboard = "";
+      let actionType = "";
       if (value) {
         try {
           const parsed = JSON.parse(value);
@@ -394,6 +397,7 @@ const Main = () => {
           actionKey = parsed.action || "";
           appwindow = parsed.window || "";
           keyboard = parsed.keyboard || "";
+          actionType = parsed.actionType || "";
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
@@ -404,6 +408,7 @@ const Main = () => {
         projectName: editedProject,
         content: item.content,
         action: actionKey,
+        actionType: item.actionType,  
         order: index + 1,
         imagePath: imagePath,
         window: appwindow,
@@ -425,6 +430,19 @@ const Main = () => {
     .then((data) => console.log(data))
     .catch((err) => console.error("Error fetching items:", err));
 
+  };
+
+  const loadProject = async () => {
+    axios.post(serverIP + 'api/load', { id: "3509dad3-4100-4d17-9eed-497bf984f839" })
+    .then(res => {
+      const projectData = res.data["Project Name"];
+      const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
+      console.log(sortedItems);
+      setItems(sortedItems); // Set your state
+    })
+    .catch(err => {
+      console.error("Error loading project data:", err);
+    });
   };
 
   const actionOnChange = (e) => {
@@ -570,6 +588,7 @@ const Main = () => {
             </Col>
             <Col className="text-end">
               <Button variant="success" onClick={btnSave} className="top-buttons"><FaFloppyDisk  /> Save</Button>
+              <Button variant="success" onClick={loadProject} className="top-buttons"><FaDownload   /> Load</Button>
               <Button variant="danger" onClick={runMain} className="top-buttons me-2"><FaPlay  /> Run</Button>
             </Col>
           </Row>
