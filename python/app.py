@@ -194,7 +194,7 @@ def Controls():
                 keyboard_text = item.get('keyboard', '')
                 image_path = item.get('imagePath', '')
                 content = item['content'].lower()
-
+                
                 # Activate the target window first
                 try:
                     if not keyboard_text:

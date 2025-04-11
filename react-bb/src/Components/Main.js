@@ -373,6 +373,7 @@ const Main = () => {
       let appwindow = "";
       let keyboard = "";
       let automationID = "";
+      let coordinates  = "";
       
       if (value) {
         try {
@@ -382,6 +383,7 @@ const Main = () => {
           appwindow = parsed.window || "";
           keyboard = parsed.keyboard || "";
           automationID = parsed.automationID || "";
+          coordinates = parsed.coord || "";
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
@@ -396,6 +398,7 @@ const Main = () => {
         window: appwindow,
         keyboard: keyboard,
         automationID: automationID,
+        coordinates: coordinates,
       };
     });
   
