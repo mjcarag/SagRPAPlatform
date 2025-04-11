@@ -404,6 +404,7 @@ const Main = () => {
   
     console.log(JSON.stringify(orderedItems, null, 2));
 
+ 
     fetch(serverIP +  "/Controls", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -412,7 +413,7 @@ const Main = () => {
     .then((res) => res.json())
     .then((data) => console.log(data))
     .catch((err) => console.error("Error fetching items:", err));
-
+    
   };
 
   const btnSave = () => {

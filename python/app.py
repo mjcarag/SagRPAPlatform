@@ -194,20 +194,22 @@ def Controls():
                 keyboard_text = item.get('keyboard', '')
                 image_path = item.get('imagePath', '')
                 content = item['content'].lower()
-                
+                coordinates = item.get('coordinates', None)
                 # Activate the target window first
                 try:
                     if not keyboard_text:
-                        app_window = gw.getWindowsWithTitle(window_title)
-                        if not app_window:
-                            results.append({
-                                "id": item.get('id', 'unknown'),
-                                "status": "error",
-                                "message": f"Window '{window_title}' not found"
-                            })
-                            continue
-                        
-                        app_window[0].activate()
+                        if window_title:
+                            app_window = gw.getWindowsWithTitle(window_title)
+
+                            if not app_window:
+                                results.append({
+                                    "id": item.get('id', 'unknown'),
+                                    "status": "error",
+                                    "message": f"Window '{window_title}' not found"
+                                })
+                                continue
+                            
+                            app_window[0].activate()
 
                     time.sleep(0.5)  # Small delay for window activation
                 except Exception as e:
@@ -393,6 +395,38 @@ def Controls():
                             "status": "error",
                             "message": f"Keyboard action failed: {str(e)}"
                         })
+                elif coordinates:
+                    try:
+                        process = subprocess.Popen(
+                            ["python", "scripts/CaptureClicks.py", json.dumps([{
+                                "action": action,
+                                "coordinates": coordinates,
+                            }])],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True
+                        )
+                        stdout, stderr = process.communicate()
+                        if process.returncode != 0:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "error",
+                                "message": "failed to capture Coordinates",
+                                "details": stderr
+                            })
+                        else:
+                            results.append({
+                                "id": item.get('id', 'unknown'),
+                                "status": "success",
+                                "message": "Click action executed" 
+                            })
+                    except Exception as e:
+                        results.append({
+                            "id": item.get('id', 'unknown'),
+                            "status": "error",
+                            "message": f"failed to capture Coordinates: {str(e)}"
+                        })
+                    
 
                 else:
                     results.append({
