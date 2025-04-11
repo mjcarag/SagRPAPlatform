@@ -36,6 +36,23 @@ def activate_window(app_title):
 
         # app_window.activate()
         # time.sleep(1)
+def Mouse_Click(XCoordinates,YCoordinates,clickType):
+    # pyautogui.click(XCoordinates, YCoordinates)
+    pyautogui.moveTo(XCoordinates, YCoordinates)
+    # pyautogui.click()
+    if "left" in clickType.lower():
+        # if doubleClick:
+        if "double" in clickType.lower():
+            pyautogui.doubleClick(button='left')
+        else:
+            pyautogui.click(button='left')
+    # elif clickType == 'right':
+    if "right" in clickType.lower():
+        # if doubleClick:
+        if "double" in clickType.lower():
+            pyautogui.doubleClick(button='right')
+        else:
+            pyautogui.click(button='right')
 
 def Capture_Click(imagePath,app_title,clickType):
     activate_window(app_title)
@@ -176,18 +193,21 @@ def main(jsondata):
             action = item.get('action')
             keyboard = item.get('keyboard')
             window = item.get('window')
+            coordinates = item.get('coordinates')
+
 
             if keyboard:
                 # activate_window(item['window'])
                 # print(item['keyboard'])
                 simulate_keystrokes(item['keyboard'])
             if action:
-                Capture_Click(
-                    item['imagePath'],
-                    item['window'],
-                    item['action']
-                )
-            time.sleep(2)
+                if coordinates:
+                    x = coordinates['x']
+                    y = coordinates['y']
+                    Mouse_Click(x, y, action)
+                else:
+                    Capture_Click(image_path, window, action)
+            time.sleep(1)
 
 if __name__ == "__main__":
     print(sys.argv)
