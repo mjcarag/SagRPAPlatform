@@ -39,6 +39,28 @@ UPLOAD_FOLDER = "static/screenshots"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 items = []
+listener = None
+coordinates = {}
+
+def on_click(x, y, button, pressed):
+    global coordinates, listener
+    if pressed:
+        coordinates = {'x': x, 'y': y}
+        if listener:
+            listener.stop()
+
+listener = mouse.Listener(on_click=on_click)
+listener.start()
+
+@app.route('/start-listen', methods=['GET'])
+def start_listen():
+    global listener
+    coordinates.clear()
+    listener = mouse.Listener(on_click=on_click)
+    listener.start()
+
+    listener.join()  # Wait for the click
+    return jsonify(coordinates)
 
 @app.route('/start-captureElement', methods=['POST','GET'])
 def captureElement():

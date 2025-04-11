@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Container, Nav, Navbar, Offcanvas, Form, Image, Row, Col, Popover, OverlayTrigger, InputGroup } from "react-bootstrap";
+import { Button, Container, Navbar, Offcanvas, Form, Image, Row, Col, Popover, OverlayTrigger, InputGroup, FloatingLabel } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import axios from 'axios';
@@ -8,6 +8,7 @@ import { FaArrowDown, FaPlay, FaList, FaCog, FaSignOutAlt, FaDownload   } from "
 import { BsRecordCircle, BsKeyboard,  } from "react-icons/bs";
 import { CiEdit, CiCamera, CiGrid42  } from "react-icons/ci";
 import { FaFloppyDisk, FaRegCircleStop } from "react-icons/fa6";
+import { LuMousePointer2, LuMapPin} from "react-icons/lu";
 
 import "../App.css";
 import "./css/keyboard.css";
@@ -32,10 +33,8 @@ const Main = () => {
   const [selectedWindow, setSelectedWindow] = useState("");
   const serverIP = "http://localhost:5000/";
   const [isRecording, setIsRecording] = useState(false);
-  const [data, setData] = useState(null);
-  const [error, setError] = useState('');
-
-
+  const [coord, setCoord] = useState({ x: 0, y: 0 });
+  const [listening, setListening] = useState(false);
   // Testing
   const [properties, setProperties] = useState(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -48,7 +47,22 @@ const Main = () => {
       .then((data) => setWindowTitles(data.titles))
       .catch((err) => console.error("Error fetching window titles:", err));
 
+      
   }, []);
+
+  const getCoords = async () => {
+    setListening(true); 
+    try {
+      const res = await axios.get('http://localhost:5000/start-listen');
+      if (res.data && res.data.x !== undefined && res.data.y !== undefined) {
+        setCoord(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch coordinates', err);
+    } finally {
+      setListening(false); 
+    }
+  };
 
   const startCapture = async () => {
     setIsCapturing(true);
@@ -268,6 +282,8 @@ const Main = () => {
       setScreenshot(storedData.image);
       setIsDisabled(false);
       setInputValue(storedData.keyboard);
+      setCoord(storedData.coord);
+
     }else{
       setIsDisabled(true);
       setAction("");
@@ -317,6 +333,21 @@ const Main = () => {
       .catch((err) => console.error("Error adding item:", err));
 
   };
+
+  const addItemCoords = () => {
+    const newItem = { content: `Coordinates ${items.length + 1}`, actionType: "Coordinates"  };
+
+    fetch(serverIP + "api/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newItem),
+    })
+      .then((res) => res.json())
+      .then((data) => setItems([...items, data]))
+      .catch((err) => console.error("Error adding item:", err));
+
+  };
+
 
   const DeleteDB = () => {
     const newItem = { content: `UIElement ${items.length + 1}`, actionType: "UIElement"  };
@@ -454,6 +485,7 @@ const Main = () => {
       image: screenshot,
       keyboard: inputValue,
       window: selectedWindow,
+      coord: coord,
     };
 
     localStorage.setItem(selectedItem.content, JSON.stringify(data));
@@ -463,9 +495,8 @@ const Main = () => {
         itm.id === selectedItem.id ? { ...itm, action: ` >> ${actionValue}` } : itm
       )
     );
-
-   
   }
+
   const popover = (
     <Popover id="popover-function-keys">
       <Popover.Body className="keyboard-container">
@@ -557,6 +588,7 @@ const Main = () => {
           <li  onClick={addItem}><CiCamera  /> Capture</li>
           <li  onClick={addItemKeyStroke}><BsKeyboard  /> Key Stroke</li>
           <li  onClick={addItemUI}><CiGrid42   /> UI Element</li>
+          <li  onClick={addItemCoords}><LuMapPin /> Coordinates</li>
           <li  onClick={() => showPropertiesRecorder("Recorder")}><BsRecordCircle /> Recorder</li>
           <li><FaList /> Actions</li>
           <li><FaCog /> Settings</li>
@@ -637,8 +669,7 @@ const Main = () => {
             </Droppable>
           </DragDropContext>
         </Container>
-        
-      
+       
       </main>      
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
         <Offcanvas.Header closeButton>
@@ -805,6 +836,55 @@ const Main = () => {
                 </Button>
                 </Col>
               </Row>
+             )}
+             {selectedAction === "Coordinates" && (
+              <>  
+              <Row className="mb-2"> 
+                <Col>
+                  <FloatingLabel controlId="floatingInputX" label="X Coordinate" className="mb-3">
+                    <Form.Control
+                      type="text"
+                      placeholder="X Coordinate"
+                      value={coord.x}
+                    />
+                  </FloatingLabel>
+                </Col>
+                <Col>
+                  <FloatingLabel controlId="floatingInputY" label="Y Coordinate" className="mb-3">
+                    <Form.Control
+                      type="text"
+                      placeholder="Y Coordinate"
+                      value={coord.y}
+                    />
+                  </FloatingLabel>
+                </Col>
+              </Row>
+
+            
+              <Row className="mb-3">
+                <Col className="d-flex justify-content-end">
+                  <Button onClick={getCoords}>
+                  {listening ? "Listening..." :  
+                  <>  
+                  <LuMousePointer2 /> Get Coordinates
+                  </>}
+                 
+                  </Button>
+                  
+                </Col>
+              </Row>
+              <Row className="mb-2"> 
+                <Col>
+                  <Form.Select aria-label="ActionSelect" onChange={actionOnChange} value={action}>
+                    <option >Choose Action</option>
+                    <option value="Left Click">Left Click</option>
+                    <option value="Right Click">Right Click</option>
+                    <option value="Double Left Click">Double Left Click</option>
+                    <option value="Double Right Click">Double Right Click</option>
+                  </Form.Select>
+                </Col>
+              </Row>
+              </>
              )}
         </Offcanvas.Body>
       </Offcanvas>
