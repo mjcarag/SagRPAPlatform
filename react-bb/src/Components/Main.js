@@ -401,7 +401,7 @@ const Main = () => {
         coordinates: coordinates,
       };
     });
-  
+    
     console.log(JSON.stringify(orderedItems, null, 2));
 
  
@@ -490,6 +490,20 @@ const Main = () => {
       const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
       console.log(sortedItems);
       setItems(sortedItems); // Set your state
+
+      sortedItems.forEach(item => {
+        localStorage.setItem(item.content, JSON.stringify({
+          action: item.action,
+          actionType: item.actionType,
+          image: item.imagePath,
+          keyboard: item.keyboard,
+          window: item.window,
+          coord: {
+            x: item.x,
+            y: item.y
+          }
+        }));
+      });
     })
     .catch(err => {
       console.error("Error loading project data:", err);
