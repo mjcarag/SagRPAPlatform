@@ -274,7 +274,7 @@ const Main = () => {
     const storedItem = localStorage.getItem(`${item.content}`); 
     console.log(item);
     setSelectedAction(item.actionType);
-
+    setCoord({ x:  item.x, y: item.y });
 
     if (storedItem) {
       const storedData = JSON.parse(storedItem);
@@ -425,6 +425,8 @@ const Main = () => {
       let appwindow = "";
       let keyboard = "";
       let actionType = "";
+      let coord = { x: null, y: null };
+
       if (value) {
         try {
           const parsed = JSON.parse(value);
@@ -433,6 +435,7 @@ const Main = () => {
           appwindow = parsed.window || "";
           keyboard = parsed.keyboard || "";
           actionType = parsed.actionType || "";
+          coord = parsed.coord || { x: null, y: null };
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
@@ -448,6 +451,10 @@ const Main = () => {
         imagePath: imagePath,
         window: appwindow,
         keyboard: keyboard,
+        coord: {
+          x: coord.x,
+          y: coord.y
+        }
       };
     });
     const finalDataStructure = {
@@ -456,7 +463,7 @@ const Main = () => {
     
     console.log(JSON.stringify(finalDataStructure, null, 2));
 
-    fetch(serverIP + "/api/save_Project", {
+    fetch(serverIP + "/api/save_Action_Json", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(finalDataStructure),
@@ -465,10 +472,19 @@ const Main = () => {
     .then((data) => console.log(data))
     .catch((err) => console.error("Error fetching items:", err));
 
+    // fetch(serverIP + "/api/save_Project", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(finalDataStructure),
+    // })
+    // .then((res) => res.json())
+    // .then((data) => console.log(data))
+    // .catch((err) => console.error("Error fetching items:", err));
+
   };
 
   const loadProject = async () => {
-    axios.post(serverIP + 'api/load', { id: "3509dad3-4100-4d17-9eed-497bf984f839" })
+    axios.post(serverIP + 'api/loadJson', { id: "Project_Name" })
     .then(res => {
       const projectData = res.data["Project Name"];
       const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
@@ -479,6 +495,19 @@ const Main = () => {
       console.error("Error loading project data:", err);
     });
   };
+
+  // const loadProject = async () => {
+  //   axios.post(serverIP + 'api/load', { id: "3509dad3-4100-4d17-9eed-497bf984f839" })
+  //   .then(res => {
+  //     const projectData = res.data["Project Name"];
+  //     const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
+  //     console.log(sortedItems);
+  //     setItems(sortedItems); // Set your state
+  //   })
+  //   .catch(err => {
+  //     console.error("Error loading project data:", err);
+  //   });
+  // };
 
   const actionOnChange = (e) => {
     const actionValue = e.target.value;

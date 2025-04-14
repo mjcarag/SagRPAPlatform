@@ -26,6 +26,10 @@ app = Flask(__name__)
 CORS(app)
 element_selector = ElementSelector()
 
+
+SAVE_FOLDER = "recordings"
+os.makedirs(SAVE_FOLDER, exist_ok=True)
+
 USERS = {
     "admin": "ngao"
 }
@@ -498,6 +502,26 @@ def save_Action():
         return jsonify({"message": "Data saved successfully!", "id": data['_id']}), 201
     return jsonify({"message": "Invalid data!"}), 400
 
+@app.route('/api/save_Action_Json', methods=['POST'])
+def save_Action_Json():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data received"}), 400
+
+        # Save the JSON to a file
+        project_name = list(data.keys())[0]
+        filename = f"{project_name.replace(' ', '_')}.json"
+        filepath = os.path.join(SAVE_FOLDER, filename)
+
+        with open(filepath, "w") as f:
+            json.dump(data, f, indent=2)
+
+        return jsonify({"message": f"File '{filename}' saved successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/emptyDB', methods=['POST'])
 def delete_db():
     collection.delete_many({})
@@ -628,5 +652,30 @@ def load_data():
             return jsonify({"error": "Item not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+    
+@app.route('/api/loadJson', methods=['POST'])
+def load_dataJson():
+    try:
+        req_data = request.get_json()
+        project_id = req_data.get("id")
+
+        if not project_id:
+            return jsonify({"error": "Missing project ID"}), 400
+
+        # You can use ID as filename, or maintain a mapping if needed
+        filename = f"{project_id}.json"  # Assuming ID is the filename (or change this logic)
+        print(filename)
+        filepath = os.path.join(SAVE_FOLDER, filename)
+
+        if not os.path.exists(filepath):
+            return jsonify({"error": "Project not found"}), 404
+
+        with open(filepath, "r") as f:
+            project_data = json.load(f)
+
+        return jsonify(project_data), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     
 app.run(host="0.0.0.0", port=5000,  debug=True)
