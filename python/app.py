@@ -673,6 +673,10 @@ def load_dataJson():
         with open(filepath, "r") as f:
             project_data = json.load(f)
 
+        for project_items in project_data.values():
+            for item in project_items:
+                items.append(item)
+                
         return jsonify(project_data), 200
 
     except Exception as e:
