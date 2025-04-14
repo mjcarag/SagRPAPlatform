@@ -499,8 +499,8 @@ const Main = () => {
           keyboard: item.keyboard,
           window: item.window,
           coord: {
-            x: item.x,
-            y: item.y
+            x: item.coord.x,
+            y: item.coord.y
           }
         }));
       });
