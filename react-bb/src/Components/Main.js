@@ -16,6 +16,7 @@ import {BeatLoader } from "react-spinners";
 
 import "../App.css";
 import "./css/keyboard.css";
+import Layout from "./Template";
 
 const Main = () => {
   const [items, setItems] = useState(JSON.parse(localStorage.getItem("items")) || []);
@@ -647,23 +648,7 @@ const Main = () => {
 
   return (
     <div className="App">
-      <Navbar fixed="top" className="bg-topNav" >
-        <Container fluid>
-          <Navbar.Brand href="/Landing_runner" className="topNav-text"> AI Copilot</Navbar.Brand>
-         
-          <Navbar.Toggle />
-          {/* <Navbar.Collapse className="justify-content-end">
-            <Nav>
-              <Nav.Link href="#features" className="topNav-text">Features</Nav.Link>
-              <Nav.Link href="#pricing" className="topNav-text">Pricing</Nav.Link>
-            </Nav>
-          </Navbar.Collapse> */}
-        </Container>
-      </Navbar>
-      {/* <Button variant="dark" className="sidebar-toggle mt-5" onClick={() => setSideBarToggle(true)}>
-        <FaBars size={20} />
-      </Button> */}
-
+      
       <aside ref={sidebarRef} className={`sidebar ${sideBarToggle ? 'visible' : ""}`}>
         <h3>Controls</h3>
         <ul className="sidebar-menu">
@@ -678,6 +663,7 @@ const Main = () => {
         </ul>
       </aside>
       {/* Main content */}
+      <Layout>
       <main>  
         <Container fluid>
           <Row>
@@ -982,6 +968,8 @@ const Main = () => {
              )}
         </Offcanvas.Body>
       </Offcanvas>
+      
+      </Layout>
     </div>
   );
 };
