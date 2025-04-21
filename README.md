@@ -25,6 +25,7 @@ Ensure you have Node.js and npm or yarn installed.
    yarn add react-bootstrap bootstrap
    npm install @craco/craco
    npm install stream-http
+   npm install js-cookie
   
 3. Install requirements.txt
    ```sh

@@ -1,15 +1,22 @@
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const RoleBasedRedirect = ({ user }) => {
-  if (!user) return <Navigate to="/" />;
+  const navigate = useNavigate();
 
-  if (user.role === 'developer') {
-    return <Navigate to="/Landing_dev" />;
-  } else if (user.role === 'runner') {
-    return <Navigate to="/Landing_runner" />;
-  } else {
-    return <Navigate to="/dashboard" />; // fallback
-  }
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'Developer') {
+        navigate('/dashboard');
+      } else if (user.role === 'Runner') {
+        navigate('/landing_runner');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, navigate]);
+
+  return null; // No UI to render
 };
 
 export default RoleBasedRedirect;

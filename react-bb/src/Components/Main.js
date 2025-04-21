@@ -9,6 +9,10 @@ import { BsRecordCircle, BsKeyboard,  } from "react-icons/bs";
 import { CiEdit, CiCamera, CiGrid42  } from "react-icons/ci";
 import { FaFloppyDisk, FaRegCircleStop } from "react-icons/fa6";
 import { LuMousePointer2, LuMapPin} from "react-icons/lu";
+import { IoClose } from "react-icons/io5";
+import BotStatusModal from './BotStatusModal';
+
+import {BeatLoader } from "react-spinners";
 
 import "../App.css";
 import "./css/keyboard.css";
@@ -35,9 +39,17 @@ const Main = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [coord, setCoord] = useState({ x: 0, y: 0 });
   const [listening, setListening] = useState(false);
+
+  //Modal
+  const [botRunning, setBotRunning] = useState(false);
+  const [botMessage, setBotMessage] = useState("Starting automation...");
+  const [botStatus, setBotStatus] = useState("running");
+
   // Testing
   const [properties, setProperties] = useState(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  
+
 
   useEffect(() => {
     // Clear localStorage on load
@@ -184,6 +196,7 @@ const Main = () => {
       
     setInputValue(e.target.value);
   };
+  
   const functionKeys = [
     "F1", "F2", "F3", "F4", "F5", "F6",
     "F7", "F8", "F9", "F10", "F11", "F12",
@@ -289,6 +302,7 @@ const Main = () => {
       setAction("");
       setScreenshot(null);
       setInputValue("");
+      setCoord({ x: 0, y: 0 });
     }
   };
 
@@ -347,7 +361,13 @@ const Main = () => {
       .catch((err) => console.error("Error adding item:", err));
 
   };
+  const deleteItem = (itemId) => {
+    console.log(items);
+    const updatedItems = items.filter(item => item.id !== itemId);
+    setItems(updatedItems);
+    localStorage.removeItem(selectedItem.content); // Remove from localStorage
 
+  };
 
   const DeleteDB = () => {
     const newItem = { content: `UIElement ${items.length + 1}`, actionType: "UIElement"  };
@@ -403,17 +423,31 @@ const Main = () => {
     });
     
     console.log(JSON.stringify(orderedItems, null, 2));
+    setBotMessage("Running automation...");
+    setBotRunning(true);
+    setBotStatus("running");
 
- 
-    fetch(serverIP +  "/Controls", {
+    fetch(serverIP + "/Controls", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderedItems),
     })
-    .then((res) => res.json())
-    .then((data) => console.log(data))
-    .catch((err) => console.error("Error fetching items:", err));
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setBotMessage("Bot run successfully!");
+        setBotStatus("success");
+        })
+      .catch((err) => {
+        console.error("Error fetching items:", err);
+        setBotMessage("Automation failed. Please try again.");
+        setBotStatus("error");
+      });
     
+  };
+
+  const handleCloseModal = () => {
+    setBotRunning(false);
   };
 
   const btnSave = () => {
@@ -457,6 +491,7 @@ const Main = () => {
         }
       };
     });
+    
     const finalDataStructure = {
       [editedProject]: orderedItems // Wrap the orderedItems inside an object with projectName as the key
     };
@@ -614,7 +649,7 @@ const Main = () => {
     <div className="App">
       <Navbar fixed="top" className="bg-topNav" >
         <Container fluid>
-          <Navbar.Brand href="#home" className="topNav-text"> AI Copilot</Navbar.Brand>
+          <Navbar.Brand href="/Landing_runner" className="topNav-text"> AI Copilot</Navbar.Brand>
          
           <Navbar.Toggle />
           {/* <Navbar.Collapse className="justify-content-end">
@@ -669,6 +704,7 @@ const Main = () => {
               <Button variant="success" onClick={btnSave} className="top-buttons"><FaFloppyDisk  /> Save</Button>
               <Button variant="success" onClick={loadProject} className="top-buttons"><FaDownload   /> Load</Button>
               <Button variant="danger" onClick={runMain} className="top-buttons me-2"><FaPlay  /> Run</Button>
+              <BotStatusModal show={botRunning}  status={botStatus} message={botMessage} onClose={handleCloseModal} />
             </Col>
           </Row>
           
@@ -699,7 +735,14 @@ const Main = () => {
                               textAlign: "center", cursor: "pointer", ...provided.draggableProps.style
                             }}play="true"
                           >
-                            {item.content} {item.action}
+                            <div className="item-content">
+                              <div className="item-center">
+                                {item.content} {item.action}
+                              </div>
+                              <button className="delete-Item" onClick={() => deleteItem(item.id)}>
+                                <IoClose />
+                              </button>
+                            </div>
                           </div>
                         )}
                       </Draggable>
@@ -718,6 +761,8 @@ const Main = () => {
         </Container>
        
       </main>      
+      
+
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Properties</Offcanvas.Title>
@@ -911,7 +956,9 @@ const Main = () => {
               <Row className="mb-3">
                 <Col className="d-flex justify-content-end">
                   <Button onClick={getCoords}>
-                  {listening ? "Listening..." :  
+                  {listening ? <>
+                    Listening <BeatLoader size={12}/>
+                  </> :  
                   <>  
                   <LuMousePointer2 /> Get Coordinates
                   </>}

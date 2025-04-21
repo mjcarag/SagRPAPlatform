@@ -133,6 +133,15 @@ def add_item():
     items.append(new_item)
     return jsonify(new_item)
 
+@app.route('/api/Deleteitems', methods=['POST'])
+def add_Deleteitems():
+    data = request.json
+    item_id = data.get("id")
+
+    global items
+    items = [item for item in items if item["id"] != item_id]
+    return jsonify(items)
+
 @app.route('/window-titles', methods=['GET'])
 def get_window_titles():
     windows = gw.getAllTitles()

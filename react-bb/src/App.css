@@ -120,6 +120,30 @@ main {
     background-color: rgba(224, 122, 95, 0.6) !important;
 }
 
+.item-content {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.item-center {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.delete-Item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #352208;
+}
+.delete-Item:hover {
+    color: red;
+}
+  
+
 @media screen and (max-width: 1268px) {
     main {
         margin-left: 200px;
