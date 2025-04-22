@@ -5,6 +5,8 @@ import Dashboard from './Components/Main'; // your main page after login
 import LandingDev from './Components/Landing_dev';
 import LandingRunner from './Components/Landing_runner';
 import RoleBasedRedirect from './Components/RoleBasedRedirect';
+import OrchestrationPage from './Components/Orchestration/OrchestrationPage';
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -18,7 +20,8 @@ function App() {
             user ? (
               <RoleBasedRedirect user={user} />
             ) : (
-              <Login onLogin={setUser} />
+              // <Login onLogin={setUser} />
+              <Dashboard></Dashboard>
             )
           }
         />
@@ -42,6 +45,7 @@ function App() {
             )
           }
         />
+        <Route path="/orchestration" element={<OrchestrationPage />} />
       </Routes>
     </Router>
   );

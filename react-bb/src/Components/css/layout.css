@@ -1,10 +1,10 @@
 
 .bg-topNav {
-    background-color: #e07a5f;
+    background-color: #1A1A1A    ;
     color: #f4f1de;
 }
 .topNav-text{
-    color: #f4f1de;
+    color: #F6F6F6;
 }
 .sidebar {
     position: fixed;
@@ -12,10 +12,10 @@
     top: 50px;
     bottom: 0;
     width: 200px;
-    background-color: #352208;
+    background-color: #5B5B5B;
     padding: 10px;
     transition: transform 0.3s ease;
-    color: #e1bb80;
+    color: #F2E8DA;
     display: flex;  
     flex-direction: column;  
 }
@@ -39,8 +39,8 @@
 }
 
 .sidebar-menu li:hover {
-    background-color: #e1bb80;
-    color: #352208;
+    background-color: #D3B27E;
+    color: #1A1A1A;
 }
 
 .sidebar-menu li svg {

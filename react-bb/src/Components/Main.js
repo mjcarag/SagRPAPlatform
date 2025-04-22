@@ -13,7 +13,7 @@ import { IoClose } from "react-icons/io5";
 import BotStatusModal from './BotStatusModal';
 
 import {BeatLoader } from "react-spinners";
-
+import { Link } from "react-router-dom";
 import "../App.css";
 import "./css/keyboard.css";
 import Layout from "./Template";
@@ -123,30 +123,7 @@ const Main = () => {
     setSelectedWindow(event.target.value);
   };
 
-  // const handleActionSelect = (e) => {
-  //   if (e.target.value === "mouseClick"){
-  //     setInputValue("");
-      
-  //   }else{
-  //     setAction("");
-  //   }
-  //   const data = {
-  //     action: action,
-  //     image: screenshot,
-  //     keyboard: inputValue,
-  //     window: selectedWindow,
-  //   };
 
-  //   localStorage.setItem(selectedItem.content, JSON.stringify(data));
-
-  //   setItems((prevItems) =>
-  //     prevItems.map((itm) =>
-  //       itm.id === selectedItem.id ? { ...itm, action: ` >> ${action}` } : itm
-  //     )
-  //   );
-    
-  //   setSelectedAction(e.target.value);
-  // };
 
   const handleKeyPress = (key) => {
     setInputValue((prev) => prev + (prev ? " + " : "") + key);
@@ -288,7 +265,9 @@ const Main = () => {
     const storedItem = localStorage.getItem(`${item.content}`); 
     console.log(item);
     setSelectedAction(item.actionType);
-    setCoord({ x:  item.x, y: item.y });
+    
+    
+    
 
     if (storedItem) {
       const storedData = JSON.parse(storedItem);
@@ -304,6 +283,13 @@ const Main = () => {
       setScreenshot(null);
       setInputValue("");
       setCoord({ x: 0, y: 0 });
+    }
+
+    if (item.x && item.y) {
+      setCoord({ x: item.x, y: item.y });
+    } else if (item.coordinates) {
+      setCoord({ x: item.coordinates.x, y: item.coordinates.y });
+      console.log("ngao");
     }
   };
 
@@ -395,7 +381,7 @@ const Main = () => {
       let keyboard = "";
       let automationID = "";
       let coordinates  = "";
-      
+      console.log("ITEMS:", item);
       if (value) {
         try {
           const parsed = JSON.parse(value);
@@ -408,6 +394,21 @@ const Main = () => {
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
+      }
+
+      if (item.actionType === "UIElement") {
+        actionKey = item.action;
+      } else if (item.actionType === "Coordinates") {
+        actionKey = item.action;
+        coordinates = { x: item.coordinates.x, y: item.coordinates.y };
+      } else if (item.actionType === "keyStroke") {
+        keyboard = item.key;
+        actionKey = item.action;
+      } else if (item.actionType === "capture") {
+        actionKey = item.action;
+      } else if (item.actionType === "window") {
+        actionKey = item.action;
+        appwindow = item.window;
       }
     
       return {
@@ -600,8 +601,9 @@ const Main = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
+
         const data = await response.json();
-        
+        console.log("Recording stopped:", data);
         if (data.status === "success") {
           const newItems = data.recording.map((action) => ({
             id: action.id,
@@ -609,7 +611,9 @@ const Main = () => {
             actionType: getActionType(action),
             action: action.action_type,
             window: action.window,
-            ...(action.element && { automationID: action.element.automation_id })
+            ...(action.element && { automationID: action.element.automation_id }),
+            coordinates: action.coord,
+            key: action.key,
           }));
           setItems(prev => [...prev, ...newItems]);
         }
@@ -631,6 +635,7 @@ const Main = () => {
   const getActionContent = (action) => {
     switch(action.action_type) {
       case 'click': return `Click on ${action.element?.name || "element"}`;
+      case 'Coordinates': return `Click on ${action.coord.x}, ${action.coord.y}`;
       case 'keystroke': return `Keystroke: ${action.key}`;
       case 'activate_window': return `Activate window: ${action.window}`;
       default: return "Unknown action";
@@ -640,6 +645,7 @@ const Main = () => {
   const getActionType = (action) => {
     switch(action.action_type) {
       case 'click': return "UIElement";
+      case 'Coordinates': return "Coordinates";
       case 'keystroke': return "keyStroke";
       case 'activate_window': return "window";
       default: return "unknown";
@@ -657,6 +663,7 @@ const Main = () => {
           <li  onClick={addItemUI}><CiGrid42   /> UI Element</li>
           <li  onClick={addItemCoords}><LuMapPin /> Coordinates</li>
           <li  onClick={() => showPropertiesRecorder("Recorder")}><BsRecordCircle /> Recorder</li>
+
           <li><FaList /> Actions</li>
           <li><FaCog /> Settings</li>
           <li className="logout"><FaSignOutAlt /> Logout</li>
@@ -749,7 +756,10 @@ const Main = () => {
       </main>      
       
 
-      <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} scroll={true} backdrop={false} placement="end">
+      <Offcanvas show={showOffcanvas} 
+        onHide={() => setShowOffcanvas(false)} 
+        scroll={true} backdrop={false} 
+        placement="end" className="custom-offcanvas">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Properties</Offcanvas.Title>
         </Offcanvas.Header>

@@ -143,6 +143,13 @@ main {
     color: red;
 }
   
+.custom-offcanvas .offcanvas-body {
+    background-color: #fdf3e7; 
+  }
+  
+  .custom-offcanvas .offcanvas-header {
+    background-color: #fdf3e7; 
+  }
 
 @media screen and (max-width: 1268px) {
     main {

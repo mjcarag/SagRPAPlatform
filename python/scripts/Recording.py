@@ -114,10 +114,14 @@ class ActionRecorder:
             if action['type'] == 'click':
                 simplified.append({
                     "id": action_id,
-                    "action_type": "click",
+                    "action_type": "Coordinates",
                     "button": action['button'].replace('Button.', '').lower(),
                     "element": action.get('element'),
-                    "window": action['window']
+                    "window": action['window'],
+                    "coord": {
+                        "x": action['position']['x'],
+                        "y": action['position']['y']
+                    }
                 })
                 
             elif action['type'] == 'keypress':
