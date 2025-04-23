@@ -36,13 +36,13 @@ const OrchestrationPage = () => {
       </aside>
 
       <Layout>
-      <main>  
-        <Container fluid>
-          <h2>Orchestration Dashboard</h2>
-          <BotPerformance performance={performance} />
-          <ActivityLog logs={logs} />
-        </Container>
-      </main>
+        <main>  
+          <Container fluid className="full-width-container">
+            <h2>Orchestration Dashboard</h2>
+            <BotPerformance performance={performance} />
+            <ActivityLog logs={logs} />
+          </Container>
+        </main>
       </Layout>
     </div>
   );

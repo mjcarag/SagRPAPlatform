@@ -1,20 +1,29 @@
 main {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 30px 10px;
-    padding-top: 80px;
-    display: flex   ;
+    width: 100%;
+    padding: 30px 40px;
+    display: flex;
     flex-direction: column;
     gap: 20px;
     background-color: #f4f1de;
     min-height: 100vh;
 }
+
 .App {
+    display: flex;
     min-height: 100vh;
     font-family: 'Roboto', sans-serif;
     background-color: #f4f1de;
 }
-
+.main-content {
+    margin-left: 200px;  
+    margin-top: 60px;  
+    padding: 1rem;
+    min-width: 85%;
+}
+.full-width-container {
+    width: 100%;
+    padding: 0 2rem; /* optional padding */
+  }
 @media screen and (max-width: 1268px) {
     main {
         margin-left: 200px;

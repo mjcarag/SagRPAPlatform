@@ -671,7 +671,7 @@ const Main = () => {
       </aside>
       {/* Main content */}
       <Layout>
-      <main>  
+      <main className="main-content">  
         <Container fluid>
           <Row>
             <Col>
@@ -700,57 +700,67 @@ const Main = () => {
               <BotStatusModal show={botRunning}  status={botStatus} message={botMessage} onClose={handleCloseModal} />
             </Col>
           </Row>
-          
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="list">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} 
-                  style={{ marginTop: "20px", 
-                    padding: "10px", 
-                    background: "rgba(53, 34, 8, 0.1)", 
-                    borderRadius: "5px", 
-                    height: "75vh", 
-                    overflowY: "auto", 
-                    width: "100vh"}}>
-                      
-                  {items.map((item, index) => (
-                    <React.Fragment key={item.id}>
-                      <Draggable key={item.id} draggableId={item.id} index={index}>
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            onClick={() => showProperties(item)}
-                            style={{
-                              padding: 10, margin: "5px auto", background: "#fff",
-                              borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-                              textAlign: "center", cursor: "pointer", ...provided.draggableProps.style
-                            }}play="true"
-                          >
-                            <div className="item-content">
-                              <div className="item-center">
-                                {item.content} {item.action}
+          <Row>
+            <Col>
+            <div className="d-flex justify-content-center">
+              <div style={{ 
+                padding: "10px",
+                height: "75vh"
+              }}>
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="list">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} 
+                      style={{ marginTop: "20px", 
+                        padding: "10px", 
+                        background: "rgba(53, 34, 8, 0.1)", 
+                        borderRadius: "5px", 
+                        height: "75vh", 
+                        overflowY: "auto", 
+                        width: "100vh"}}>
+                          
+                      {items.map((item, index) => (
+                        <React.Fragment key={item.id}>
+                          <Draggable key={item.id} draggableId={item.id} index={index}>
+                            {(provided) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                onClick={() => showProperties(item)}
+                                style={{
+                                  padding: 10, margin: "5px auto", background: "#fff",
+                                  borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                                  textAlign: "center", cursor: "pointer", ...provided.draggableProps.style
+                                }}play="true"
+                              >
+                                <div className="item-content">
+                                  <div className="item-center">
+                                    {item.content} {item.action}
+                                  </div>
+                                  <button className="delete-Item" onClick={() => deleteItem(item.id)}>
+                                    <IoClose />
+                                  </button>
+                                </div>
                               </div>
-                              <button className="delete-Item" onClick={() => deleteItem(item.id)}>
-                                <IoClose />
-                              </button>
+                            )}
+                          </Draggable>
+                          {index < items.length - 1 && (
+                            <div style={{ position: "relative", height: "30px", textAlign: "center" }}>
+                              <FaArrowDown size={20} color="gray" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
                             </div>
-                          </div>
-                        )}
-                      </Draggable>
-                      {index < items.length - 1 && (
-                        <div style={{ position: "relative", height: "30px", textAlign: "center" }}>
-                          <FaArrowDown size={20} color="gray" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
-                        </div>
-                      )}
-                    </React.Fragment>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+              </div>
+            </div>
+            </Col>
+          </Row>
         </Container>
        
       </main>      
