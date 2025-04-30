@@ -381,7 +381,9 @@ const Main = () => {
       let keyboard = "";
       let automationID = "";
       let coordinates  = "";
-      console.log("ITEMS:", item);
+      let action = "";
+      console.log(item);
+
       if (value) {
         try {
           const parsed = JSON.parse(value);
@@ -394,27 +396,29 @@ const Main = () => {
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
         }
+      } else {
+
+        if (item.actionType === "UIElement") {
+          actionKey = item.actionType;
+        } else if (item.actionType === "Coordinates") {
+          actionKey = item.actionType;
+          coordinates = { x: item.coordinates.x, y: item.coordinates.y };
+          action = item.button;
+        } else if (item.actionType === "keyStroke") {
+          keyboard = item.key;
+          actionKey = item.actionType;
+        } else if (item.actionType === "capture") {
+          actionKey = item.actionType;
+        } else if (item.actionType === "window") {
+          actionKey = item.actionType;
+          appwindow = item.window;
+        }
       }
 
-      if (item.actionType === "UIElement") {
-        actionKey = item.action;
-      } else if (item.actionType === "Coordinates") {
-        actionKey = item.action;
-        coordinates = { x: item.coordinates.x, y: item.coordinates.y };
-      } else if (item.actionType === "keyStroke") {
-        keyboard = item.key;
-        actionKey = item.action;
-      } else if (item.actionType === "capture") {
-        actionKey = item.action;
-      } else if (item.actionType === "window") {
-        actionKey = item.action;
-        appwindow = item.window;
-      }
-    
       return {
         id: item.id,
         content: item.content,
-        action: actionKey,
+        action: action,
         order: index + 1,
         imagePath: imagePath,
         window: appwindow,
@@ -422,6 +426,7 @@ const Main = () => {
         automationID: automationID,
         coordinates: coordinates,
       };
+
     });
     
     console.log(JSON.stringify(orderedItems, null, 2));
@@ -453,7 +458,7 @@ const Main = () => {
   };
 
   const btnSave = () => {
-
+    const generateProjectID = (name) => name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
     const orderedItems = items.map((item, index) => {
       const value = localStorage.getItem(item.content);
       let imagePath = "";
@@ -495,7 +500,7 @@ const Main = () => {
     });
     
     const finalDataStructure = {
-      [editedProject]: orderedItems // Wrap the orderedItems inside an object with projectName as the key
+      [generateProjectID(editedProject)]: orderedItems // Wrap the orderedItems inside an object with projectName as the key
     };
     
     console.log(JSON.stringify(finalDataStructure, null, 2));
@@ -609,7 +614,7 @@ const Main = () => {
             id: action.id,
             content: getActionContent(action),
             actionType: getActionType(action),
-            action: action.action_type,
+            action: action.button,
             window: action.window,
             ...(action.element && { automationID: action.element.automation_id }),
             coordinates: action.coord,

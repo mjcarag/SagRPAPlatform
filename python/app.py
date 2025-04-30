@@ -518,15 +518,40 @@ def save_Action_Json():
         if not data:
             return jsonify({"error": "No JSON data received"}), 400
 
-        # Save the JSON to a file
-        project_name = list(data.keys())[0]
-        filename = f"{project_name.replace(' ', '_')}.json"
-        filepath = os.path.join(SAVE_FOLDER, filename)
+        # Extract project ID and project name
+        project_id = list(data.keys())[0]
+        project_data = data[project_id]
+        project_name = project_data[0]["projectName"] if project_data else "Untitled"
+       
 
+        # Save the main JSON file
+        filename = f"{project_id}.json"
+        filepath = os.path.join(SAVE_FOLDER, filename)
         with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
-        return jsonify({"message": f"File '{filename}' saved successfully"}), 200
+        # Load file manager JSON
+        file_manager_path = os.path.join(SAVE_FOLDER, "file_manager.json")
+        file_manager = []
+        if os.path.exists(file_manager_path):
+            with open(file_manager_path, "r") as f:
+                file_manager = json.load(f)
+
+        # Update or append project in file_manager
+        existing = next((item for item in file_manager if item["projectId"] == project_id), None)
+        if existing:
+            existing["projectName"] = project_name
+        else:
+            file_manager.append({
+                "projectId": project_id,
+                "projectName": project_name
+            })
+
+        # Save updated file manager
+        with open(file_manager_path, "w") as f:
+            json.dump(file_manager, f, indent=2)
+
+        return jsonify({"message": f"File '{filename}' saved and file manager updated successfully"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -535,7 +560,20 @@ def save_Action_Json():
 def delete_db():
     collection.delete_many({})
     return jsonify({"message": "Removed!"}), 201
-   
+
+@app.route('/api/list_projects', methods=['GET'])
+def list_projects():
+    try:
+        file_manager_path = os.path.join(SAVE_FOLDER, "file_manager.json")
+        if os.path.exists(file_manager_path):
+            with open(file_manager_path, "r") as f:
+                projects = json.load(f)
+            return jsonify(projects), 200
+        else:
+            return jsonify([]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/api/save_Project', methods=['POST'])
 def save_Project():
     data = request.json  # Parse JSON data
