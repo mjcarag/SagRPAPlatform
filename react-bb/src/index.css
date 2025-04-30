@@ -7,7 +7,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Style for the active button */
+.sidebar-menu li.active {
+  background-color: #e1bb80; /* Blue background for active button */
+  color: black; /* White text color */
+}
+
+.sidebar-menu li.active:hover {
+  background-color: #e1bb80; /* Darker blue when hovered */
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
