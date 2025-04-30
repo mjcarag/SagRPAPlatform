@@ -6,7 +6,7 @@ import LandingDev from './Components/Landing_dev';
 import LandingRunner from './Components/Landing_runner';
 import RoleBasedRedirect from './Components/RoleBasedRedirect';
 import OrchestrationPage from './Components/Orchestration/OrchestrationPage';
-
+import ControlRoom from './Components/Dashboard/Dashboard_dev'
 
 function App() {
   const [user, setUser] = useState(null);
@@ -46,6 +46,7 @@ function App() {
           }
         />
         <Route path="/orchestration" element={<OrchestrationPage />} />
+        <Route path="/ControlRoom" element={<ControlRoom />} />
       </Routes>
     </Router>
   );

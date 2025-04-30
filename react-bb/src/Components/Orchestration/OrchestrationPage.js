@@ -4,7 +4,8 @@ import ActivityLog from './ActivityLog';
 import Container from 'react-bootstrap/Container';
 import Layout  from '../Template';  
 import '../css/orchestration.css'; // Import your CSS file
-
+import PdfViewer from '../pdfViewer/pdfViewer';
+import '../../pdfWorker'
 import { MdDashboard } from "react-icons/md";
 import { FaCog, FaSignOutAlt } from "react-icons/fa";
 
@@ -41,6 +42,7 @@ const OrchestrationPage = () => {
             <h2>Orchestration Dashboard</h2>
             <BotPerformance performance={performance} />
             <ActivityLog logs={logs} />
+            <PdfViewer />
           </Container>
         </main>
       </Layout>
