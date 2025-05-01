@@ -60,73 +60,89 @@ const Main = () => {
         setIsEditing(false);
     };
     const btnSave = () => {
-
-        const orderedItems = items.map((item, index) => {
+      const generateProjectID = (name) => name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
+      const orderedItems = items.map((item, index) => {
         const value = localStorage.getItem(item.content);
         let imagePath = "";
         let actionKey = "";
         let appwindow = "";
         let keyboard = "";
         let actionType = "";
-        let coord = { x: null, y: null };
-
+        let coordinates  = "";
+        let action = "";
         if (value) {
-            try {
-                const parsed = JSON.parse(value);
-                imagePath = parsed.image || ""; 
-                actionKey = parsed.action || "";
-                appwindow = parsed.window || "";
-                keyboard = parsed.keyboard || "";
-                actionType = parsed.actionType || "";
-                coord = parsed.coord || { x: null, y: null };
-            } catch (err) {
-                console.error("Error parsing localStorage value:", err);
-            }
-        }
-    
-        return {
-        id: item.id,
-        projectName: editedProject,
-        content: item.content,
-        action: actionKey,
-        actionType: item.actionType,  
-        order: index + 1,
-        imagePath: imagePath,
-        window: appwindow,
-        keyboard: keyboard,
-        coord: {
-            x: coord.x,
-            y: coord.y
-        }
-        };
-    });
-    
-    const finalDataStructure = {
-        [editedProject]: orderedItems // Wrap the orderedItems inside an object with projectName as the key
-    };
-    
-    console.log(JSON.stringify(finalDataStructure, null, 2));
+          try {
+            const parsed = JSON.parse(value);
+            imagePath = parsed.image || ""; 
+            actionKey = parsed.action || "";
+            appwindow = parsed.window || "";
+            keyboard = parsed.keyboard || "";
+            actionType = parsed.actionType || "";
+            coordinates = parsed.coord || "";
+          } catch (err) {
+            console.error("Error parsing localStorage value:", err);
+          }
+        } else {
 
-    fetch(serverIP + "/api/save_Action_Json", {
+          if (item.actionType === "UIElement") {
+            actionKey = item.actionType;
+            action = item.action; 
+          } else if (item.actionType === "Coordinates" ) {
+            console.log(item.actionType);
+            actionKey = item.actionType;
+            coordinates = { x: item.coordinates.x, y: item.coordinates.y };
+            action = item.action;
+          } else if (item.actionType === "keyStroke") {
+            keyboard = item.key;
+            actionKey = item.actionType;
+          } else if (item.actionType === "capture") {
+            actionKey = item.actionType;
+          } else if (item.actionType === "window") {
+            actionKey = item.actionType;
+            appwindow = item.window;
+          }
+        }
+      
+        return {
+          id: item.id,
+          projectName: editedProject,
+          content: item.content,
+          action: action,
+          actionType: actionKey,  
+          order: index + 1,
+          imagePath: imagePath,
+          window: appwindow,
+          keyboard: keyboard,
+          coordinates: coordinates
+        };
+      });
+      
+      const finalDataStructure = {
+        [generateProjectID(editedProject)]: orderedItems // Wrap the orderedItems inside an object with projectName as the key
+      };
+      
+      console.log(JSON.stringify(finalDataStructure, null, 2));
+  
+      fetch(serverIP + "/api/save_Action_Json", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalDataStructure),
-    })
-    .then((res) => res.json())
-    .then((data) => {console.log(data);
-      setShowToast(true);
-    })
-    .catch((err) => console.error("Error fetching items:", err));
-
-    // fetch(serverIP + "/api/save_Project", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(finalDataStructure),
-    // })
-    // .then((res) => res.json())
-    // .then((data) => console.log(data))
-    // .catch((err) => console.error("Error fetching items:", err));
-
+      })
+      .then((res) => res.json())
+      .then((data) => {console.log(data);
+        setShowToast(true);
+      })
+      .catch((err) => console.error("Error fetching items:", err));
+  
+      // fetch(serverIP + "/api/save_Project", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(finalDataStructure),
+      // })
+      // .then((res) => res.json())
+      // .then((data) => console.log(data))
+      // .catch((err) => console.error("Error fetching items:", err));
+  
     };
     const loadProject = async () => {
         axios.post(serverIP + 'api/loadJson', { id: "Project_Name" })
@@ -291,7 +307,7 @@ const Main = () => {
         const projectKey = Object.keys(res.data)[0];
         const projectData = res.data[projectKey];
         const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
-  
+        setEditedProject(projectKey);
         setItems(sortedItems);
         sortedItems.forEach(item => {
           localStorage.setItem(item.content, JSON.stringify({

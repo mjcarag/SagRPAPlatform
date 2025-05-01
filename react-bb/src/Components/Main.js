@@ -113,7 +113,8 @@ const Main = () => {
         const projectKey = Object.keys(res.data)[0];
         const projectData = res.data[projectKey];
         const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
-  
+        console.log(sortedItems);
+        setEditedProject(projectKey);
         setItems(sortedItems);
         sortedItems.forEach(item => {
           localStorage.setItem(item.content, JSON.stringify({
@@ -508,8 +509,8 @@ const Main = () => {
       let appwindow = "";
       let keyboard = "";
       let actionType = "";
-      let coord = { x: null, y: null };
-
+      let coordinates  = "";
+      let action = "";
       if (value) {
         try {
           const parsed = JSON.parse(value);
@@ -518,9 +519,28 @@ const Main = () => {
           appwindow = parsed.window || "";
           keyboard = parsed.keyboard || "";
           actionType = parsed.actionType || "";
-          coord = parsed.coord || { x: null, y: null };
+          coordinates = parsed.coord || "";
         } catch (err) {
           console.error("Error parsing localStorage value:", err);
+        }
+      } else {
+
+        if (item.actionType === "UIElement") {
+          actionKey = item.actionType;
+          action = item.action; 
+        } else if (item.actionType === "Coordinates" ) {
+          console.log(item.actionType);
+          actionKey = item.actionType;
+          coordinates = { x: item.coordinates.x, y: item.coordinates.y };
+          action = item.action;
+        } else if (item.actionType === "keyStroke") {
+          keyboard = item.key;
+          actionKey = item.actionType;
+        } else if (item.actionType === "capture") {
+          actionKey = item.actionType;
+        } else if (item.actionType === "window") {
+          actionKey = item.actionType;
+          appwindow = item.window;
         }
       }
     
@@ -528,16 +548,13 @@ const Main = () => {
         id: item.id,
         projectName: editedProject,
         content: item.content,
-        action: actionKey,
-        actionType: item.actionType,  
+        action: action,
+        actionType: actionKey,  
         order: index + 1,
         imagePath: imagePath,
         window: appwindow,
         keyboard: keyboard,
-        coord: {
-          x: coord.x,
-          y: coord.y
-        }
+        coordinates: coordinates
       };
     });
     
