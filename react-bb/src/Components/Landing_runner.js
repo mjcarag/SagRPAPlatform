@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Container, Navbar, Offcanvas, Form, Image, Row, Col, Popover, OverlayTrigger, InputGroup, FloatingLabel } from "react-bootstrap";
+import { Button, Container, Navbar, Modal, Offcanvas, Form, Toast, Image, Row, Col, Popover, OverlayTrigger, InputGroup, FloatingLabel } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import axios from 'axios';
@@ -38,6 +38,9 @@ const Main = () => {
     const serverIP = "http://localhost:5000/";
     const [isRecording, setIsRecording] = useState(false);
     const [coord, setCoord] = useState({ x: 0, y: 0 });
+    const [showProjectModal, setShowProjectModal] = useState(false);
+    const [projectList, setProjectList] = useState([]);
+    const [showToast, setShowToast] = useState(false);
 
     //Modal
     const [botRunning, setBotRunning] = useState(false);
@@ -110,7 +113,9 @@ const Main = () => {
         body: JSON.stringify(finalDataStructure),
     })
     .then((res) => res.json())
-    .then((data) => console.log(data))
+    .then((data) => {console.log(data);
+      setShowToast(true);
+    })
     .catch((err) => console.error("Error fetching items:", err));
 
     // fetch(serverIP + "/api/save_Project", {
@@ -215,57 +220,97 @@ const Main = () => {
 
  
     const toggleRecording = async () => {
-        try {
-          if (isRecording) {
-            const response = await fetch(serverIP + "stop-recording", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-            });
-            const data = await response.json();
-            
-            if (data.status === "success") {
-              const newItems = data.recording.map((action) => ({
-                id: action.id,
-                content: getActionContent(action),
-                actionType: getActionType(action),
-                action: action.action_type,
-                window: action.window,
-                ...(action.element && { automationID: action.element.automation_id })
-              }));
-              setItems(prev => [...prev, ...newItems]);
-            }
-          } else {
-            await fetch(serverIP + "start-recording", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-            });
+      try {
+        if (isRecording) {
+          const response = await fetch(serverIP + "stop-recording", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+  
+          const data = await response.json();
+          console.log("Recording stopped:", data);
+          if (data.status === "success") {
+            const newItems = data.recording.map((action) => ({
+              id: action.id,
+              content: getActionContent(action),
+              actionType: getActionType(action),
+              action: action.button,
+              window: action.window,
+              ...(action.element && { automationID: action.element.automation_id }),
+              coordinates: action.coord,
+              key: action.key,
+            }));
+            setItems(prev => [...prev, ...newItems]);
           }
-    
-          setIsRecording(!isRecording);
-        } catch (err) {
-          console.error("Recording error:", err);
-          alert(`Failed to ${isRecording ? 'stop' : 'start'} recording`);
+        } else {
+          await fetch(serverIP + "start-recording", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
         }
+  
+        setIsRecording(!isRecording);
+      } catch (err) {
+        console.error("Recording error:", err);
+        alert(`Failed to ${isRecording ? 'stop' : 'start'} recording`);
+      }
     };
+
     // Helper functions
     const getActionContent = (action) => {
-        switch(action.action_type) {
+      switch(action.action_type) {
         case 'click': return `Click on ${action.element?.name || "element"}`;
+        case 'Coordinates': return `Click on ${action.coord.x}, ${action.coord.y}`;
         case 'keystroke': return `Keystroke: ${action.key}`;
         case 'activate_window': return `Activate window: ${action.window}`;
         default: return "Unknown action";
-        }
+      }
     };
     
-    const getActionType = (action) => {
-        switch(action.action_type) {
-        case 'click': return "UIElement";
-        case 'keystroke': return "keyStroke";
-        case 'activate_window': return "window";
-        default: return "unknown";
-        }
-    };
-    
+  const getActionType = (action) => {
+    switch(action.action_type) {
+      case 'click': return "UIElement";
+      case 'Coordinates': return "Coordinates";
+      case 'keystroke': return "keyStroke";
+      case 'activate_window': return "window";
+      default: return "unknown";
+    }
+  };
+
+  const fetchProjectList = () => {
+    axios.get(serverIP + 'api/list_projects')
+      .then(res => {
+        setProjectList(res.data);
+        setShowProjectModal(true);
+      })
+      .catch(err => console.error("Failed to fetch project list:", err));
+  };
+  const handleProjectLoad = (projectId) => {
+    axios.post(serverIP + 'api/loadJson', { id: projectId })
+      .then(res => {
+        const projectKey = Object.keys(res.data)[0];
+        const projectData = res.data[projectKey];
+        const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
+  
+        setItems(sortedItems);
+        sortedItems.forEach(item => {
+          localStorage.setItem(item.content, JSON.stringify({
+            action: item.action,
+            actionType: item.actionType,
+            image: item.imagePath,
+            keyboard: item.keyboard,
+            window: item.window,
+            coord: { x: item.coord.x, y: item.coord.y }
+          }));
+        });
+  
+        setShowProjectModal(false);
+      })
+      .catch(err => {
+        console.error("Error loading project:", err);
+        setShowProjectModal(false);
+      });
+  };
     return (
     <div className="App">
       
@@ -282,7 +327,7 @@ const Main = () => {
       {/* Main content */}
 
       <Layout>
-        <main>  
+        <main className="mt-5">  
         <Container fluid>
           <Row>
             <Col>
@@ -306,8 +351,31 @@ const Main = () => {
             </Col>
             <Col className="text-end">
               <Button variant="success" onClick={btnSave} className="top-buttons"><FaFloppyDisk  /> Save</Button>
-              <Button variant="success" onClick={loadProject} className="top-buttons"><FaDownload   /> Load</Button>
+              <Button variant="success" onClick={fetchProjectList} className="top-buttons"><FaDownload   /> Load</Button>
               <BotStatusModal show={botRunning}  status={botStatus} message={botMessage} onClose={handleCloseModal} />
+              <Modal show={showProjectModal} onHide={() => setShowProjectModal(false)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Select a Project</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  {projectList.length === 0 ? (
+                    <p>No projects found.</p>
+                  ) : (
+                    <ul className="list-group">
+                      {projectList.map(project => (
+                        <li
+                          key={project.projectId}
+                          className="list-group-item list-group-item-action"
+                          onClick={() => handleProjectLoad(project.projectId)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {project.projectName}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Modal.Body>
+              </Modal>
             </Col>
           </Row>
           
@@ -362,7 +430,24 @@ const Main = () => {
             </Droppable>
           </DragDropContext>
         </Container>
-       
+       <Toast
+          onClose={() => setShowToast(false)}
+          show={showToast}
+          delay={3000}
+          autohide
+          bg="success"
+          style={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            minWidth: '200px'
+          }}
+        >
+          <Toast.Header closeButton={false}>
+            <strong className="me-auto">Success</strong>
+          </Toast.Header>
+          <Toast.Body className="text-white">Project saved successfully!</Toast.Body>
+        </Toast>
       </main>      
       
 

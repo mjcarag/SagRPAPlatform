@@ -1,0 +1,84 @@
+main {
+    width: 100%;
+    padding: 30px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #f4f1de;
+    min-height: 100vh;
+}
+
+.App {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f1de;
+}
+.main-content {
+    margin-left: 200px;  
+    margin-top: 57px;  
+    padding: 1rem;
+    width: calc(100vw - 200px); /* Adjusted to take full width minus the sidebar */
+}
+.full-width-container {
+    width: 100%;
+    padding: 0 2rem; /* optional padding */
+}
+
+.file-explorer {
+    width: 200px;
+    background-color: #fff;
+    border-left: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+    margin-left: 200px; /* Adjusted to align with the main content */
+    display: flex;  
+    flex-direction: column;  
+    position: fixed;
+    top: 57px; /* Adjusted to align with the main content */
+    bottom: 0; /* Adjusted to align with the main content */
+    z-index: 1000; /* Ensure it stays above other content */
+
+}
+.file-explorer {
+    width: 250px;
+    padding: 15px;
+    background-color: #fafafa;
+    border-right: 1px solid #ddd;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.file-explorer-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-item {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.file-item:hover {
+    background-color: #eee; 
+}
+
+.file-icon {
+    margin-right: 8px;
+}
+  
+@media screen and (max-width: 1268px) {
+    main {
+        margin-left: 200px;
+    }
+    
+}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button, Container, Navbar, Offcanvas, Form, Image, Row, Col, Popover, OverlayTrigger, InputGroup, FloatingLabel } from "react-bootstrap";
+import React, { useState, useEffect, act } from "react";
+import { Button, Container, Navbar, Offcanvas, Form, Image, Row,Toast , Col, Popover, OverlayTrigger, InputGroup, FloatingLabel, Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import axios from 'axios';
@@ -40,6 +40,9 @@ const Main = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [coord, setCoord] = useState({ x: 0, y: 0 });
   const [listening, setListening] = useState(false);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [projectList, setProjectList] = useState([]);
+  const [showToast, setShowToast] = useState(false);
 
   //Modal
   const [botRunning, setBotRunning] = useState(false);
@@ -96,7 +99,41 @@ const Main = () => {
 
 
   };
-
+  const fetchProjectList = () => {
+    axios.get(serverIP + 'api/list_projects')
+      .then(res => {
+        setProjectList(res.data);
+        setShowProjectModal(true);
+      })
+      .catch(err => console.error("Failed to fetch project list:", err));
+  };
+  const handleProjectLoad = (projectId) => {
+    axios.post(serverIP + 'api/loadJson', { id: projectId })
+      .then(res => {
+        const projectKey = Object.keys(res.data)[0];
+        const projectData = res.data[projectKey];
+        const sortedItems = [...projectData].sort((a, b) => a.order - b.order);
+  
+        setItems(sortedItems);
+        sortedItems.forEach(item => {
+          localStorage.setItem(item.content, JSON.stringify({
+            action: item.action,
+            actionType: item.actionType,
+            image: item.imagePath,
+            keyboard: item.keyboard,
+            window: item.window,
+            coord: { x: item.coord.x, y: item.coord.y }
+          }));
+        });
+  
+        setShowProjectModal(false);
+      })
+      .catch(err => {
+        console.error("Error loading project:", err);
+        setShowProjectModal(false);
+      });
+  };
+  
   const fetchProperties = async () => {
     fetch(serverIP + "get-Elementproperties")
       .then((res) => res.json())
@@ -148,6 +185,7 @@ const Main = () => {
   const handleInputChange = (e) => {
       const data = {
         action: action,
+        actionType: selectedAction,
         image: screenshot,
         keyboard: inputValue,
         window: selectedWindow,
@@ -388,7 +426,8 @@ const Main = () => {
         try {
           const parsed = JSON.parse(value);
           imagePath = parsed.image || ""; 
-          actionKey = parsed.action || "";
+          actionKey = parsed.actionType || "";
+          action = parsed.action || "";
           appwindow = parsed.window || "";
           keyboard = parsed.keyboard || "";
           automationID = parsed.automationID || "";
@@ -400,10 +439,12 @@ const Main = () => {
 
         if (item.actionType === "UIElement") {
           actionKey = item.actionType;
-        } else if (item.actionType === "Coordinates") {
+          action = item.action; 
+        } else if (item.actionType === "Coordinates" ) {
+          console.log(item.actionType);
           actionKey = item.actionType;
           coordinates = { x: item.coordinates.x, y: item.coordinates.y };
-          action = item.button;
+          action = item.action;
         } else if (item.actionType === "keyStroke") {
           keyboard = item.key;
           actionKey = item.actionType;
@@ -418,6 +459,7 @@ const Main = () => {
       return {
         id: item.id,
         content: item.content,
+        actionType: actionKey,
         action: action,
         order: index + 1,
         imagePath: imagePath,
@@ -426,7 +468,7 @@ const Main = () => {
         automationID: automationID,
         coordinates: coordinates,
       };
-
+ 
     });
     
     console.log(JSON.stringify(orderedItems, null, 2));
@@ -511,7 +553,9 @@ const Main = () => {
       body: JSON.stringify(finalDataStructure),
     })
     .then((res) => res.json())
-    .then((data) => console.log(data))
+    .then((data) => {console.log(data);
+      setShowToast(true);
+    })
     .catch((err) => console.error("Error fetching items:", err));
 
     // fetch(serverIP + "/api/save_Project", {
@@ -571,6 +615,7 @@ const Main = () => {
 
     const data = {
       action: actionValue,
+      actionType: selectedAction,
       image: screenshot,
       keyboard: inputValue,
       window: selectedWindow,
@@ -700,9 +745,34 @@ const Main = () => {
             </Col>
             <Col className="text-end">
               <Button variant="success" onClick={btnSave} className="top-buttons"><FaFloppyDisk  /> Save</Button>
-              <Button variant="success" onClick={loadProject} className="top-buttons"><FaDownload   /> Load</Button>
+              <Button variant="success" onClick={fetchProjectList} className="top-buttons"><FaDownload   /> Load</Button>
               <Button variant="danger" onClick={runMain} className="top-buttons me-2"><FaPlay  /> Run</Button>
               <BotStatusModal show={botRunning}  status={botStatus} message={botMessage} onClose={handleCloseModal} />
+              
+              <Modal show={showProjectModal} onHide={() => setShowProjectModal(false)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Select a Project</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  {projectList.length === 0 ? (
+                    <p>No projects found.</p>
+                  ) : (
+                    <ul className="list-group">
+                      {projectList.map(project => (
+                        <li
+                          key={project.projectId}
+                          className="list-group-item list-group-item-action"
+                          onClick={() => handleProjectLoad(project.projectId)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {project.projectName}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Modal.Body>
+              </Modal>
+
             </Col>
           </Row>
           <Row>
@@ -767,7 +837,25 @@ const Main = () => {
             </Col>
           </Row>
         </Container>
-       
+        <Toast
+          onClose={() => setShowToast(false)}
+          show={showToast}
+          delay={3000}
+          autohide
+          bg="success"
+          style={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            minWidth: '200px'
+          }}
+        >
+          <Toast.Header closeButton={false}>
+            <strong className="me-auto">Success</strong>
+          </Toast.Header>
+          <Toast.Body className="text-white">Project saved successfully!</Toast.Body>
+        </Toast>
+
       </main>      
       
 

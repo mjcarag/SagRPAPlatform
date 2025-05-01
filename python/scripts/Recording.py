@@ -6,7 +6,7 @@ import json
 import os
 from datetime import datetime
 from typing import List, Dict, Any
-
+from pywinauto import Desktop
 class ActionRecorder:
     def __init__(self):
         self.actions: List[Dict[str, Any]] = []
@@ -112,18 +112,23 @@ class ActionRecorder:
             action_id = f"rec-{index}-{int(time.time())}"
             
             if action['type'] == 'click':
-                simplified.append({
+                simplified_click = {
                     "id": action_id,
                     "action_type": "Coordinates",
                     "button": action['button'].replace('Button.', '').lower(),
-                    "element": action.get('element'),
                     "window": action['window'],
                     "coord": {
                         "x": action['position']['x'],
                         "y": action['position']['y']
-                    }
-                })
-                
+                    },
+                    "action": "left click" if "left" in action['button'].lower() else "right click"
+                }
+                element = action.get('element')
+                if element and element.get('automation_id'):
+                    simplified_click["element"] = element
+            
+                simplified.append(simplified_click)
+                    
             elif action['type'] == 'keypress':
                 simplified.append({
                     "id": action_id,
@@ -138,7 +143,7 @@ class ActionRecorder:
                     "action_type": "activate_window",
                     "window": action['window']
                 })
-                
+            
         return simplified
 
     def save_recording(self, filename: str = None) -> str:

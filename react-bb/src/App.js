@@ -35,7 +35,7 @@ function App() {
             )
           }
         />
-        <Route
+        {/* <Route
           path="/landing_runner"
           element={
             user && user.role === 'Runner' ? (
@@ -44,6 +44,11 @@ function App() {
               <Navigate to="/" />
             )
           }
+        /> */}
+        <Route
+          path="/landing_runner"
+          element={<LandingRunner />}
+          
         />
         <Route path="/orchestration" element={<OrchestrationPage />} />
         <Route path="/ControlRoom" element={<ControlRoom />} />
