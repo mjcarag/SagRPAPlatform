@@ -8,3 +8,4 @@ mss
 pywinauto
 pynput
 keyboard
+pygetwindow
