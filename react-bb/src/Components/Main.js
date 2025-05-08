@@ -36,7 +36,8 @@ const Main = () => {
   const [selectedAction, setSelectedAction] = useState("");
   const [windowTitles, setWindowTitles] = useState([]);
   const [selectedWindow, setSelectedWindow] = useState("");
-  const serverIP = "http://localhost:5000/";
+  // const serverIP = "http://localhost:5000/";
+  const serverIP = "https://sag-rpa-backend.onrender.com/";
   const [isRecording, setIsRecording] = useState(false);
   const [coord, setCoord] = useState({ x: 0, y: 0 });
   const [listening, setListening] = useState(false);

@@ -9,3 +9,4 @@ pywinauto
 pynput
 keyboard
 pygetwindow
+pymongo
