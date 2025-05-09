@@ -37,7 +37,7 @@ const Main = () => {
   const [windowTitles, setWindowTitles] = useState([]);
   const [selectedWindow, setSelectedWindow] = useState("");
   // const serverIP = "http://localhost:5000/";
-  const serverIP = "https://sag-rpa-backend.onrender.com/";
+  const serverIP = "http://13.238.145.59:5000/";
   const [isRecording, setIsRecording] = useState(false);
   const [coord, setCoord] = useState({ x: 0, y: 0 });
   const [listening, setListening] = useState(false);

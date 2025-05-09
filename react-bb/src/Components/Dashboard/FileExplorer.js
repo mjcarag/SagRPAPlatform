@@ -4,7 +4,7 @@ import "./Dashboard.css"; // Import your CSS file
 
 const FileExplorer = ({ onProjectSelect }) => {
   const [projects, setProjects] = useState([]);
-  const serverIP = "http://localhost:5000/";
+  const serverIP = "http://13.238.145.59:5000/";
   
   useEffect(() => {
     fetch(serverIP + "/api/list_projects")

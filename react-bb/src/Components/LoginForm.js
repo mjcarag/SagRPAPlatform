@@ -8,7 +8,7 @@ const LoginForm = ({onLogin}) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const serverIP = "http://localhost:5000/";
+    const serverIP = "http://13.238.145.59:5000/";
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
