@@ -37,7 +37,7 @@ const Main = () => {
   const [windowTitles, setWindowTitles] = useState([]);
   const [selectedWindow, setSelectedWindow] = useState("");
   // const serverIP = "http://localhost:5000/";
-  const serverIP = "http://13.238.145.59:5000/";
+  const serverIP = "https://13.238.145.59:5000/";
   const [isRecording, setIsRecording] = useState(false);
   const [coord, setCoord] = useState({ x: 0, y: 0 });
   const [listening, setListening] = useState(false);
@@ -70,7 +70,7 @@ const Main = () => {
   const getCoords = async () => {
     setListening(true); 
     try {
-      const res = await axios.get('http://localhost:5000/start-listen');
+      const res = await axios.get('https://13.238.145.59:5000/start-listen');
       if (res.data && res.data.x !== undefined && res.data.y !== undefined) {
         setCoord(res.data);
       }

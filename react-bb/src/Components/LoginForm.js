@@ -8,11 +8,11 @@ const LoginForm = ({onLogin}) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const serverIP = "http://13.238.145.59:5000/";
+    const serverIP = "https://13.238.145.59:5000/";
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/login', { username, password });
+            const res = await axios.post('https://13.238.145.59:5000/login', { username, password });
             if (res.data.success) {
             onLogin(res.data.user); // optional user data
             } else {
