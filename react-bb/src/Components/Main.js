@@ -59,7 +59,11 @@ const Main = () => {
   useEffect(() => {
     // Clear localStorage on load
     localStorage.clear();
-    fetch(serverIP + "window-titles")
+    fetch(serverIP + "Controls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([{ id: "get-window-titles", actionType: "getWindowTitles" }])
+    })
       .then((res) => res.json())
       .then((data) => setWindowTitles(data.titles))
       .catch((err) => console.error("Error fetching window titles:", err));
@@ -159,7 +163,11 @@ const Main = () => {
   };
 
   const handleSelectChangeWindow = (event) => {
-    fetch(serverIP + "window-titles")
+    fetch(serverIP + "Controls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([{ id: "get-window-titles", actionType: "getWindowTitles" }])
+    })
       .then((res) => res.json())
       .then((data) => setWindowTitles(data.titles))
       .catch((err) => console.error("Error fetching window titles:", err));
@@ -724,7 +732,22 @@ const Main = () => {
     }
   };
 
-  return (
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(serverIP + "Responses")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.id === "get-window-titles" && data.status === "success") {
+            setWindowTitles(data.titles || []);
+          }
+        })
+        .catch((err) => console.error("Error polling /Responses:", err));
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+return (
     <div className="App">
       
       <aside ref={sidebarRef} className={`sidebar ${sideBarToggle ? 'visible' : ""}`}>
